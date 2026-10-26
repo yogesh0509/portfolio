@@ -1,37 +1,40 @@
 {
   "schemaVersion": 1,
-  "syncedAt": "2026-10-08T20:47:41.011Z",
+  "syncedAt": "2026-10-26T09:01:54.445Z",
   "profile": {
     "login": "yogesh0509",
     "name": "Yogesh Agrawal",
-    "bio": "Full Stack developer | Blockchain developer | Open Source Contributor",
+    "bio": "Backend & blockchain engineer | Open Source",
     "location": "Bangalore",
     "followers": 16,
-    "publicRepos": 28,
+    "publicRepos": 29,
     "createdAt": "2021-12-19T18:46:03Z"
   },
   "repos": [
     {
-      "name": "Haystack",
-      "fullName": "yogesh0509/Haystack",
-      "description": "Private Electrum Sync",
-      "language": "Rust",
+      "name": "portfolio",
+      "fullName": "yogesh0509/portfolio",
+      "description": "Portfolio website using NEXT.js and tailwind CSS",
+      "language": "TypeScript",
       "languages": {
-        "Dockerfile": 2566,
-        "Python": 76868,
-        "Rust": 186567
+        "CSS": 6007,
+        "JavaScript": 2714,
+        "Python": 2328,
+        "Rust": 7622,
+        "Solidity": 7655,
+        "TypeScript": 308883
       },
       "stars": 0,
       "forks": 0,
       "topics": [],
-      "homepage": null,
-      "createdAt": "2026-09-08T11:35:18Z",
-      "pushedAt": "2026-10-05T15:27:22Z",
+      "homepage": "https://www.yogesh0509.info",
+      "createdAt": "2024-02-01T07:05:35Z",
+      "pushedAt": "2026-10-21T13:26:34Z",
       "fork": false,
       "archived": false,
-      "htmlUrl": "https://github.com/yogesh0509/Haystack",
+      "htmlUrl": "https://github.com/yogesh0509/portfolio",
       "defaultBranch": "main",
-      "hasReadme": false
+      "hasReadme": true
     },
     {
       "name": "yogesh0509",
@@ -44,10 +47,54 @@
       "topics": [],
       "homepage": null,
       "createdAt": "2022-06-10T01:49:16Z",
-      "pushedAt": "2026-09-08T11:20:44Z",
+      "pushedAt": "2026-10-12T22:42:23Z",
       "fork": false,
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/yogesh0509",
+      "defaultBranch": "main",
+      "hasReadme": false
+    },
+    {
+      "name": "jarvis",
+      "fullName": "yogesh0509/jarvis",
+      "description": "Custom voice-control assistant for Windows.",
+      "language": "Python",
+      "languages": {
+        "Batchfile": 567,
+        "PowerShell": 3795,
+        "Python": 863476
+      },
+      "stars": 0,
+      "forks": 0,
+      "topics": [],
+      "homepage": null,
+      "createdAt": "2026-09-12T23:42:54Z",
+      "pushedAt": "2026-10-12T19:23:41Z",
+      "fork": false,
+      "archived": false,
+      "htmlUrl": "https://github.com/yogesh0509/jarvis",
+      "defaultBranch": "main",
+      "hasReadme": true
+    },
+    {
+      "name": "Haystack",
+      "fullName": "yogesh0509/Haystack",
+      "description": "Private Electrum Sync",
+      "language": "Rust",
+      "languages": {
+        "Dockerfile": 2566,
+        "Python": 76868,
+        "Rust": 186567
+      },
+      "stars": 2,
+      "forks": 0,
+      "topics": [],
+      "homepage": null,
+      "createdAt": "2026-09-08T11:35:18Z",
+      "pushedAt": "2026-10-05T15:27:22Z",
+      "fork": false,
+      "archived": false,
+      "htmlUrl": "https://github.com/yogesh0509/Haystack",
       "defaultBranch": "main",
       "hasReadme": false
     },
@@ -115,6 +162,28 @@
       "hasReadme": false
     },
     {
+      "name": "paradise-cakes",
+      "fullName": "yogesh0509/paradise-cakes",
+      "description": null,
+      "language": "TypeScript",
+      "languages": {
+        "CSS": 2945,
+        "JavaScript": 2964,
+        "TypeScript": 112245
+      },
+      "stars": 0,
+      "forks": 0,
+      "topics": [],
+      "homepage": "https://paradise-cakes-seven.vercel.app",
+      "createdAt": "2025-06-21T21:03:44Z",
+      "pushedAt": "2025-10-21T16:20:46Z",
+      "fork": false,
+      "archived": false,
+      "htmlUrl": "https://github.com/yogesh0509/paradise-cakes",
+      "defaultBranch": "master",
+      "hasReadme": true
+    },
+    {
       "name": "BakeXP",
       "fullName": "yogesh0509/BakeXP",
       "description": null,
@@ -170,7 +239,7 @@
     {
       "name": "Shikamaru-Protocol",
       "fullName": "yogesh0509/Shikamaru-Protocol",
-      "description": null,
+      "description": "DeFi Strategy Management System",
       "language": "TypeScript",
       "languages": {
         "Dockerfile": 1558,
@@ -231,28 +300,6 @@
       "htmlUrl": "https://github.com/yogesh0509/chiji-offchain",
       "defaultBranch": "main",
       "hasReadme": true
-    },
-    {
-      "name": "portfolio-yogesh0509",
-      "fullName": "yogesh0509/portfolio-yogesh0509",
-      "description": "Portfolio website using NEXT.js and tailwind CSS",
-      "language": "TypeScript",
-      "languages": {
-        "CSS": 884,
-        "JavaScript": 175,
-        "TypeScript": 37950
-      },
-      "stars": 0,
-      "forks": 0,
-      "topics": [],
-      "homepage": "https://www.yogesh0509.info/",
-      "createdAt": "2024-02-01T07:05:35Z",
-      "pushedAt": "2024-09-14T23:13:41Z",
-      "fork": false,
-      "archived": false,
-      "htmlUrl": "https://github.com/yogesh0509/portfolio-yogesh0509",
-      "defaultBranch": "main",
-      "hasReadme": false
     },
     {
       "name": "song-recommendation-kmeans",
@@ -391,30 +438,6 @@
       "htmlUrl": "https://github.com/yogesh0509/1inch-API-defi",
       "defaultBranch": "main",
       "hasReadme": true
-    },
-    {
-      "name": "E-commerce-edu",
-      "fullName": "yogesh0509/E-commerce-edu",
-      "description": null,
-      "language": "JavaScript",
-      "languages": {
-        "CSS": 105283,
-        "Dockerfile": 442,
-        "HTML": 3616,
-        "JavaScript": 223832,
-        "SCSS": 110700
-      },
-      "stars": 0,
-      "forks": 0,
-      "topics": [],
-      "homepage": null,
-      "createdAt": "2023-05-09T08:57:19Z",
-      "pushedAt": "2023-05-09T09:18:25Z",
-      "fork": false,
-      "archived": false,
-      "htmlUrl": "https://github.com/yogesh0509/E-commerce-edu",
-      "defaultBranch": "main",
-      "hasReadme": false
     },
     {
       "name": "GSOC2023-Proposal",
@@ -639,7 +662,7 @@
       "repo": "yogesh0509/web3-DREAM11",
       "url": "https://web3-dream-11.vercel.app",
       "status": 200,
-      "checkedAt": "2026-10-08T20:47:38.346Z"
+      "checkedAt": "2026-10-26T09:01:52.452Z"
     }
   ]
 }
