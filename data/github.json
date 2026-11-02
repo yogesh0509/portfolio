@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "syncedAt": "2026-10-26T09:01:54.445Z",
+  "syncedAt": "2026-11-02T11:17:39.798Z",
   "profile": {
     "login": "yogesh0509",
     "name": "Yogesh Agrawal",
@@ -29,10 +29,32 @@
       "topics": [],
       "homepage": "https://www.yogesh0509.info",
       "createdAt": "2024-02-01T07:05:35Z",
-      "pushedAt": "2026-10-21T13:26:34Z",
+      "pushedAt": "2026-11-01T09:59:33Z",
       "fork": false,
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/portfolio",
+      "defaultBranch": "main",
+      "hasReadme": true
+    },
+    {
+      "name": "jarvis",
+      "fullName": "yogesh0509/jarvis",
+      "description": "Custom voice-control assistant for Windows.",
+      "language": "Python",
+      "languages": {
+        "Batchfile": 567,
+        "PowerShell": 7858,
+        "Python": 680754
+      },
+      "stars": 0,
+      "forks": 0,
+      "topics": [],
+      "homepage": null,
+      "createdAt": "2026-09-12T23:42:54Z",
+      "pushedAt": "2026-10-27T12:23:57Z",
+      "fork": false,
+      "archived": false,
+      "htmlUrl": "https://github.com/yogesh0509/jarvis",
       "defaultBranch": "main",
       "hasReadme": true
     },
@@ -53,28 +75,6 @@
       "htmlUrl": "https://github.com/yogesh0509/yogesh0509",
       "defaultBranch": "main",
       "hasReadme": false
-    },
-    {
-      "name": "jarvis",
-      "fullName": "yogesh0509/jarvis",
-      "description": "Custom voice-control assistant for Windows.",
-      "language": "Python",
-      "languages": {
-        "Batchfile": 567,
-        "PowerShell": 3795,
-        "Python": 863476
-      },
-      "stars": 0,
-      "forks": 0,
-      "topics": [],
-      "homepage": null,
-      "createdAt": "2026-09-12T23:42:54Z",
-      "pushedAt": "2026-10-12T19:23:41Z",
-      "fork": false,
-      "archived": false,
-      "htmlUrl": "https://github.com/yogesh0509/jarvis",
-      "defaultBranch": "main",
-      "hasReadme": true
     },
     {
       "name": "Haystack",
@@ -221,7 +221,7 @@
         "Solidity": 873634,
         "TypeScript": 97510
       },
-      "stars": 16,
+      "stars": 17,
       "forks": 6,
       "topics": [
         "blockchain",
@@ -662,7 +662,7 @@
       "repo": "yogesh0509/web3-DREAM11",
       "url": "https://web3-dream-11.vercel.app",
       "status": 200,
-      "checkedAt": "2026-10-26T09:01:52.452Z"
+      "checkedAt": "2026-11-02T11:17:37.840Z"
     }
   ]
 }

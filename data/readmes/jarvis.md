@@ -10,42 +10,32 @@ place), executes it, and replies out loud. Fully local/offline -- no cloud
 dependency anywhere in the pipeline.
 
 Runs as a **native Windows Python process** -- mic capture, global hotkeys,
-window management, and autostart are all unavailable from WSL2. This repo
-lives on `D:\` by design; the Python *interpreter* itself is installed
-under `C:\Users\agraw\AppData\Local\Programs\Python\Python312\` (native
-Windows PATH is shadowed by the Microsoft Store `python.exe` stub alias --
-always invoke via `.venv\Scripts\python.exe` or the interpreter's absolute
-path, not bare `python`).
+window management, and autostart are all unavailable from WSL2. Always
+invoke `.venv\Scripts\python.exe`, never bare `python` (on this machine it
+resolves to the Microsoft Store stub).
 
 ## Setup
 
 ```powershell
 cd D:\jarvis
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m pip install llama-cpp-python --prefer-binary --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt --only-binary=llama_cpp_python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt   # adds ruff (pytest is already in requirements.txt)
 ```
 
-`llama-cpp-python` is installed separately, from a prebuilt wheel index
-rather than `requirements.txt`'s default resolution -- its sdist bundles
-llama.cpp's full source tree, including a deeply-nested Svelte web UI
-folder that exceeds Windows' 260-character `MAX_PATH` during extraction on
-this machine. The prebuilt CPU wheel sidesteps the whole problem.
+`llama_cpp_python` must come from the prebuilt CPU wheel index: its sdist
+bundles llama.cpp's full source tree, whose nested paths exceed Windows'
+260-character `MAX_PATH` during extraction.
 
-`livekit` (in `requirements.txt`) is there for exactly one thing: WebRTC's
-echo canceller (`AudioProcessingModule`), which lets "hey jarvis" work
-over music and video -- see `echo_canceller.py`. It's pure local DSP from
-an 11MB prebuilt `win_amd64` wheel; nothing connects to a LiveKit server
-or anywhere else. If it's missing or fails to load, Jarvis still runs,
-and system audio simply pauses the wake word again (the boot line
-"echo canceller" says so).
+`livekit` is there for one thing: WebRTC's echo canceller, which lets "hey
+jarvis" work over music and video (`echo_canceller.py`). It's local DSP from
+a prebuilt wheel; nothing connects to a LiveKit server. If it fails to load,
+Jarvis still runs and system audio simply pauses the wake word again.
 
 ### Fetching the models
 
-None of the model weights are in this repo (see `.gitignore` --
-`models/`); they're pre-downloaded, on-disk artifacts, not source. Fetch
-each one by hand into `models/<name>/` via PowerShell's
-`Invoke-WebRequest` -- **not** Python's own HTTPS client, which gets
-silently reset on this machine (see `ENVIRONMENT.md`). Required:
+None of the model weights are in this repo (`models/` is gitignored). Fetch
+each one by hand into `models/<name>/` via PowerShell's `Invoke-WebRequest`,
+**not** Python's HTTPS client, which gets reset on this machine. Required:
 
 | Directory | What | Used by |
 |---|---|---|
@@ -55,10 +45,11 @@ silently reset on this machine (see `ENVIRONMENT.md`). Required:
 | `models/piper-en_GB-northern_english_male-medium/` | Piper TTS voice (active) | `tts.py` |
 | `models/piper-en_GB-alan-medium/` | Piper TTS voice (switchable fallback) | `tts.py` (`VOICE = "alan"`) |
 
-openWakeWord's `hey_jarvis` model and the bundled `silero_vad.onnx` are
-fetched automatically by the `openwakeword` package itself on first run,
-from GitHub release assets -- never blocked by the TLS issue above, so no
-manual-download workaround was ever needed there.
+openWakeWord's `hey_jarvis`, embedding and melspectrogram models and
+`silero_vad.onnx` live in the package's `resources/models/` folder. The
+package does not download them by itself; on a fresh venv fetch them once with
+`.\.venv\Scripts\python.exe -c "import openwakeword.utils as u; u.download_models()"`
+(GitHub release assets, not affected by the TLS problem).
 
 ## Starting Jarvis
 
@@ -70,26 +61,20 @@ jarvis resume     # bring it back
 jarvis quit       # stop it completely
 ```
 
-It also starts itself automatically at Windows logon and after the
-machine wakes from sleep -- see `scheduler/README.md`. For everything
-else -- what you can actually say, the wake-word/push-to-talk flow,
-dictation, the state diagram, and the full `jarvis` command reference --
-see `USER_GUIDE.md`.
+It also starts itself at Windows logon and after the machine wakes from
+sleep -- see `scheduler/README.md`. What you can say, the wake-word and
+push-to-talk flow, the state diagram and the full command reference are in
+`USER_GUIDE.md`.
 
 ## Documentation
 
-This README covers setup and getting started only. Everything else lives
-in its own file:
-
 | File | Covers |
 |---|---|
-| `USER_GUIDE.md` | Day-to-day usage: what you can say, the wake-word/push-to-talk flow, dictation, the four-state diagram, and the full `jarvis` command reference |
-| `ARCHITECTURE.md` | The recognition pipeline, the `actions.ACTIONS` security boundary, and a module-by-module project layout |
-| `DECISIONS.md` | The decision log -- why the system works the way it does, organized by area, with real bugs and measurements behind each choice |
-| `ENVIRONMENT.md` | Quirks specific to this development machine (TLS resets, a double-process-spawn quirk) that aren't project bugs |
-| `KNOWN_LIMITATIONS.md` | Known gaps and provisional tuning, deliberately deferred rather than fixed |
-| `STATUS.md` | Phase-by-phase build history |
-| `scheduler/README.md` | The three Task Scheduler entries that start/stop Jarvis around logon and sleep/wake |
+| `USER_GUIDE.md` | Day-to-day usage, the state diagram, troubleshooting, the `jarvis` command reference |
+| `docs/architecture.md` | Pipeline, security boundary, threads, complete module list |
+| `docs/decisions/` | One file per code area: what the design is, why, and what was rejected (indexed in `CLAUDE.md`) |
+| `CLAUDE.md` | Rules and workflow for Claude Code, which makes all changes in this repo |
+| `scheduler/README.md` | The Task Scheduler entries that start/stop Jarvis around logon and sleep/wake |
 
-`tests/` is a pytest suite requiring no audio device, no models, and no
-window manager -- run it with `.venv\Scripts\python.exe -m pytest`.
+Tests: `.venv\Scripts\python.exe -m pytest` (no audio device or window
+manager needed; `tests/test_intent_matcher.py` loads the local BGE model).
