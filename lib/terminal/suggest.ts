@@ -40,7 +40,7 @@ export function chipsFor(session: Session, env: Env): string[] {
   const chips: string[] = [];
   if (dir?.children?.some((c) => c.name === "README.md")) chips.push("cat README.md");
   chips.push("ls");
-  if (project) chips.push(project.recordings.length > 0 || project.live || project.local ? "run" : "gh repo view");
+  if (project) chips.push(project.live || project.local ? "run" : "gh repo view");
   chips.push("cd ..", "help");
   return chips;
 }

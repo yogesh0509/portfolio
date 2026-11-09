@@ -186,7 +186,7 @@ function welcomeMarkdown(config: SiteConfig, snapshot: Snapshot): string {
 
   lines.push("---", "", "Everything here is clickable. Press Ctrl+P to open any file, or type `help` in the terminal below.", "");
   lines.push(
-    "This site is a static build. The project pages, the terminal and the recorded runs are generated from my GitHub data, which a weekly job refreshes. " +
+    "This site is a static build. The project pages and the terminal are generated from my GitHub data, which a weekly job refreshes. " +
       "The source is [yogesh0509/portfolio-yogesh0509](https://github.com/yogesh0509/portfolio-yogesh0509).",
     "",
   );
@@ -313,7 +313,7 @@ export function buildVfs({ config, snapshot, read }: BuildInput): VfsDir {
 
 /**
  * Refuses a tree that would break routing: a top-level name that is also a real route
- * (resume, vfs, SHA256SUMS, ...), or two entries whose names differ only by case.
+ * (resume, vfs, robots.txt, ...), or two entries whose names differ only by case.
  */
 export function assertValidTree(root: VfsDir): void {
   for (const child of root.children) {

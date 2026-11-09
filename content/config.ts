@@ -1,6 +1,6 @@
 /**
  * The single place that lists who I am, what is featured and where it lives.
- * The explorer, the page list, Quick Open, the terminal, the resume and the sitemap
+ * The explorer, the page list, Quick Open, the terminal and the resume
  * are all built from this file plus the generated snapshot in data/.
  *
  * To add a project: add one entry to `projects`. To retire one: delete the entry.
@@ -49,16 +49,6 @@ export interface Stack {
   frameworks: string[];
 }
 
-/** A real terminal session recorded with `npm run record`, replayed by the `run` command. */
-export interface Recording {
-  /** The exact command that was recorded. Typing it in the project's folder replays the recording. */
-  command: string;
-  /** File name under public/casts/. */
-  cast: string;
-  /** One line saying what the run shows. */
-  title: string;
-}
-
 export interface FeaturedProject {
   /** Folder name under /projects or /open-source. Lower case, no spaces. */
   slug: string;
@@ -77,8 +67,6 @@ export interface FeaturedProject {
   live?: string;
   /** Runs only on a developer machine. Shown in the PORTS tab as local only. */
   local?: { port: number; command: string };
-  /** Recorded runs, shown by `run`. Empty when nothing can be run safely. */
-  recordings?: Recording[];
   /** Testnet deployments, listed on the project page and readable with `cast call`. */
   contracts?: DeployedContract[];
   excerpts: ExcerptSpec[];
@@ -252,14 +240,6 @@ export const projects: FeaturedProject[] = [
         ],
       },
     ],
-    recordings: [
-      {
-        // Recorded in a clean checkout of the pinned commit, so it matches the excerpts on this page.
-        command: "forge test",
-        cast: "djed-forge-test.cast",
-        title: "Djed-Solidity at the commit after my rolling-window fix: the full Foundry test run, including the Shu oracle converter tests",
-      },
-    ],
     excerpts: [
       {
         // The Shu oracle converter: a 24-hour rolling window of hourly price buckets, from which the
@@ -382,18 +362,6 @@ export const projects: FeaturedProject[] = [
     period: "2026",
     stack: { languages: ["Rust", "Python"], frameworks: ["bdk_electrum", "Docker"] },
     local: { port: 7878, command: "docker run -it --rm -p 127.0.0.1:7878:7878 -v haystack-out:/haystack/out haystack" },
-    recordings: [
-      {
-        command: "python3 -m attack strategies",
-        cast: "haystack-strategies.cast",
-        title: "Why the decoys are fixed: six rounds against an attacker who sees every query. Redrawn decoys fall to 0 bits, fixed ones hold at 3.32",
-      },
-      {
-        command: "python3 -m attack score --session tests/fixtures/haystack-session.jsonl --honeypot tests/fixtures/haystack-honeypot-log.json --tier T1",
-        cast: "haystack-score.cast",
-        title: "The real padded client, scored by the attacker module over six syncs: 3.32 bits each time",
-      },
-    ],
     excerpts: [
       {
         // Keyed decoy derivation: same-type decoys from an HMAC, so every sync sends the same ones.

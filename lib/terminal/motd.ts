@@ -24,7 +24,7 @@ export function motd(env: Env): Line[] {
     blank(),
     [{ text: " * About:    " }, cmd("man yogesh")],
     [{ text: " * Projects: " }, cmd("ls projects")],
-    [{ text: " * Try:      " }, cmd("run haystack"), { text: "  " }, cmd("git log --oneline"), { text: "  " }, cmd("contact"), { text: "  " }, cmd("help")],
+    [{ text: " * Try:      " }, cmd("run web3-dream11"), { text: "  " }, cmd("git log --oneline"), { text: "  " }, cmd("contact"), { text: "  " }, cmd("help")],
     blank(),
   ];
   if (recent > 0) {

@@ -12,7 +12,6 @@ export interface Span {
   fg?: Color;
   bold?: boolean;
   dim?: boolean;
-  italic?: boolean;
   underline?: boolean;
   /** External link, opened in a new tab. */
   href?: string;
@@ -20,10 +19,6 @@ export interface Span {
   open?: string;
   /** Clicking runs this command in the terminal. */
   run?: string;
-  /** An exact CSS colour (256-colour and true-colour output from recordings). Wins over `fg`. */
-  rgb?: string;
-  /** Background colour, as a CSS colour. */
-  bg?: string;
 }
 
 export type Line = Span[];
@@ -35,13 +30,12 @@ export type Effect =
   | { type: "navigate"; url: string }
   | { type: "closePanel" }
   | { type: "openPanel"; tab: "terminal" | "ports" }
-  | { type: "copy"; text: string }
-  | { type: "replay"; cast: string; title: string };
+  | { type: "copy"; text: string };
 
 export interface Result {
   lines: Line[];
   effects?: Effect[];
-  /** Exit status, shown by nothing but kept for tests and `$?`-style logic. */
+  /** Exit status, shown by nothing but kept for `$?`-style logic. */
   status?: number;
 }
 
@@ -51,7 +45,7 @@ export interface Env {
   tree: ExplorerNode[];
   /** Contents of a file by VFS path, or null if it does not exist. */
   readFile: (path: string) => Promise<string | null>;
-  /** Network access for the commands that read a chain. Injected so tests never touch the network. */
+  /** Network access for the commands that read a chain. Injected so commands do not depend on the global fetch. */
   fetch: typeof fetch;
   now: () => Date;
 }

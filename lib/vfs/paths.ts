@@ -60,10 +60,8 @@ export function displayPath(path: string): string {
 export const RESERVED_TOP_LEVEL = [
   "resume",
   "vfs",
-  "sha256sums",
   "_next",
   "404",
-  "sitemap.xml",
   "robots.txt",
 ] as const;
 

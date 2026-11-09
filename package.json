@@ -8,8 +8,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "preview": "node scripts/preview.mjs",
-    "sync": "tsx scripts/sync-github.ts",
-    "record": "tsx scripts/record.ts"
+    "sync": "tsx scripts/sync-github.ts"
   },
   "dependencies": {
     "@noble/hashes": "^2.4.0",

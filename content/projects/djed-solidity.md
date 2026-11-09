@@ -22,6 +22,6 @@ The excerpt in this folder is the version after my 2026 fix to my own earlier co
 
 `DjedShu.sol` is a modified copy of `Djed.sol`, written by the protocol's authors. I adapted it to use the two prices.
 
-## Run it
+## Tests
 
-`run djed-solidity` replays the Foundry test run recorded at the pinned commit: 39 tests, including the three for the converter.
+`forge test` at the pinned commit runs 39 tests, all passing, including the three for the converter.

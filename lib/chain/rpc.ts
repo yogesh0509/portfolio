@@ -1,6 +1,6 @@
 import { NETWORKS, type Network } from "./networks";
 
-/** Minimal read-only chain access. `fetchImpl` is a parameter so tests never touch the network. */
+/** Minimal read-only chain access. `fetchImpl` is a parameter so callers can supply their own fetch. */
 
 export class RpcError extends Error {}
 

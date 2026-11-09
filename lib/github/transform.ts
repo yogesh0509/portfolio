@@ -4,7 +4,7 @@ import type { Demo, PullRequest, Repo, Snapshot } from "./schema";
 
 /**
  * Pure functions that turn GitHub API responses into the committed snapshot.
- * No network and no disk here, so every rule is covered by tests.
+ * No network and no disk here, so every rule can be checked in isolation.
  */
 
 export const ApiUserSchema = z.object({
@@ -127,8 +127,8 @@ export function sliceLines(source: string, range?: [number, number]): string {
 }
 
 /**
- * Rules for secrets that must never reach a public page. The sync and the recorder refuse to write
- * a file that matches, and report only the kind, never the matched text.
+ * Rules for secrets that must never reach a public page. The sync refuses to write a file that
+ * matches, and reports only the kind, never the matched text.
  *
  * A rule may `ignore` a match that is clearly a placeholder or a reference to an environment
  * variable ("your_api_key_here", "process.env.KEY"), so documentation does not trip the guard.

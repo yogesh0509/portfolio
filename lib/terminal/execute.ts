@@ -35,7 +35,7 @@ function unknown(name: string, env: Env): Result {
   const lines: Line[] = [error(`bash: ${name}: command not found`)];
   const project = findProject(env.data, name);
   const guess = closest(name, visibleNames());
-  if (project) lines.push([{ text: "Did you mean " }, cmd(`run ${project.slug}`), { text: "?" }]);
+  if (project) lines.push([{ text: "Did you mean " }, cmd(project.live || project.local ? `run ${project.slug}` : `cd ~${project.path}`), { text: "?" }]);
   else if (guess) lines.push([{ text: "Did you mean " }, cmd(guess), { text: "?" }]);
   else lines.push([{ text: "Type " }, cmd("help"), { text: " to see what is available." }]);
   return { lines, status: 127 };

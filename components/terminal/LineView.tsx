@@ -11,7 +11,6 @@ function classes(span: Span): string {
     span.fg ? `t-${span.fg}` : "",
     span.bold ? "font-bold" : "",
     span.dim ? "opacity-70" : "",
-    span.italic ? "italic" : "",
     span.underline ? "underline underline-offset-2" : "",
   ]
     .filter(Boolean)
@@ -20,8 +19,6 @@ function classes(span: Span): string {
 
 function SpanView({ span, run }: { span: Span; run: (command: string) => void }) {
   const className = classes(span);
-  // Exact colours come from replayed recordings (256-colour and true-colour output).
-  const style = span.rgb || span.bg ? { color: span.rgb, backgroundColor: span.bg } : undefined;
   if (span.run) {
     const command = span.run;
     return (
@@ -48,19 +45,13 @@ function SpanView({ span, run }: { span: Span; run: (command: string) => void })
       </a>
     );
   }
-  return className || style ? (
-    <span className={className} style={style}>
-      {span.text}
-    </span>
-  ) : (
-    <>{span.text}</>
-  );
+  return className ? <span className={className}>{span.text}</span> : <>{span.text}</>;
 }
 
-export default function LineView({ line, run, wrap = true }: { line: Line; run: (command: string) => void; wrap?: boolean }) {
+export default function LineView({ line, run }: { line: Line; run: (command: string) => void }) {
   // An empty line still needs height, so it keeps one character of space.
   return (
-    <div className={wrap ? "whitespace-pre-wrap break-words" : "whitespace-pre"}>
+    <div className="whitespace-pre-wrap break-words">
       {line.length === 0 || line.every((s) => s.text === "") ? " " : line.map((span, i) => <SpanView key={i} span={span} run={run} />)}
     </div>
   );

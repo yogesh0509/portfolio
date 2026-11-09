@@ -8,7 +8,7 @@ Hashing the addresses does not hide them. The protocol sends the SHA-256 of the 
 
 Each real address is sent together with `padding − 1` decoys of the same script type, shuffled. At padding 10 the server receives 1,000 addresses for a 100-address wallet and answers all of them. The wallet keeps only its own answers.
 
-The decoys are **fixed**, not redrawn. Each one is derived with an HMAC from a key built from the wallet's account public keys, so every sync, device and reinstall sends the same decoys. Redrawing them would be a mistake: a server that watches several rounds can intersect them, because real addresses show up every round and fresh decoys do not. The recorded run `python3 -m attack strategies` shows exactly that. Run `run haystack` in the terminal to replay it.
+The decoys are **fixed**, not redrawn. Each one is derived with an HMAC from a key built from the wallet's account public keys, so every sync, device and reinstall sends the same decoys. Redrawing them would be a mistake: a server that watches several rounds can intersect them, because real addresses show up every round and fresh decoys do not. At the pinned commit (`c745fe6`), `python3 -m attack strategies` shows exactly that over six rounds against an attacker who sees every query: redrawn decoys fall to 0 bits by the third round, while fixed ones hold at 3.32 bits in all six.
 
 ## Measuring privacy in bits
 

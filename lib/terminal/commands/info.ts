@@ -192,7 +192,7 @@ export const manCommand = (list: () => Command[]): Command => ({
       ]);
     }
     const project = findProject(env.data, topic);
-    if (project) return ok([[{ text: `No manual entry for ${args[0]}. ` }, { text: "Try " }, cmd(`cat ${project.path.slice(1)}/README.md`)]], { status: 16 });
+    if (project) return ok([[{ text: `No manual entry for ${args[0]}. ` }, { text: "Try " }, cmd(`cat ~${project.path}/README.md`)]], { status: 16 });
     return { lines: [plain(`No manual entry for ${args[0]}`)], status: 16 };
   },
 });

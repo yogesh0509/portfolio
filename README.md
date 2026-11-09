@@ -2,8 +2,7 @@
 
 My portfolio, built to look like VS Code connected to a WSL Ubuntu machine, because it shows code
 first and decoration second. Projects are files in the language they are written in, the terminal
-runs real commands against my real data, and every number on the site traces back to GitHub or to
-a recording.
+runs real commands against my real data, and every number on the site traces back to GitHub.
 
 It is a fully static site (`output: "export"`), deployed on Vercel.
 
@@ -26,7 +25,7 @@ npm run typecheck
 content/config.ts ──┐                                      ┌─> explorer, tabs, Quick Open (Ctrl+P)
 content/projects/*.md ├─> lib/vfs/build.ts ─> virtual ──────┼─> one static page per file
 data/ (GitHub snapshot) ┘   (pure function)     file system ├─> terminal: ls, cd, cat, run, git log, ...
-                                                            └─> sitemap, SHA256SUMS, /vfs/*.json
+                                                            └─> /vfs/*.json (terminal data)
 ```
 
 - **One source of truth.** `content/config.ts` lists who I am, the featured projects, the testnet
@@ -36,16 +35,16 @@ data/ (GitHub snapshot) ┘   (pure function)     file system ├─> terminal: 
   Pages, the explorer, Quick Open and the terminal all read that tree, so they cannot disagree.
 - **Real code, pinned.** Each project shows excerpts of code I wrote, fetched at a pinned commit
   and headed with a permalink to the exact lines.
-- **A terminal that does things.** Commands are plain functions over data (`lib/terminal/`), tested
-  without a browser. `run <project>` replays a recorded session; `cast call` reads my testnet
-  contracts live; `sha256sum -c SHA256SUMS` re-hashes every file in your browser.
+- **A terminal that does things.** Commands are plain functions over data (`lib/terminal/`): they
+  return lines and effects and never touch the page. `run <project>` opens a live demo or shows how
+  to start one locally; `cast call` reads my testnet contracts live.
 - **Highlighting at build time.** Shiki uses VS Code's own grammars, so colours match the editor,
   and none of it ships to the browser.
 
 ## Add or change a project
 
 1. Add an entry to `projects` in `content/config.ts` (slug, title, one-sentence tagline, repo,
-   stack, period). Optional: `live`, `local`, `contracts`, `recordings`, `excerpts`.
+   stack, period). Optional: `live`, `local`, `contracts`, `excerpts`.
 2. Write the page body in `content/projects/<slug>.md`. The facts table, the deployed-contracts
    table and the merged pull requests are generated.
 3. For an excerpt, give the repo, path, **full commit SHA** and line range. Use a commit that is on
@@ -59,8 +58,8 @@ EVM contract addresses must be EIP-55 checksummed or the build fails: a typo is 
 
 `npm run sync` writes `data/github.json`, `data/readmes/` and `data/excerpts/`.
 `.github/workflows/sync-github.yml` runs it every Monday and commits only if something really
-changed. Because a push made with the built-in token does not trigger CI, the job type-checks,
-tests and builds before it commits.
+changed. Because a push made with the built-in token does not trigger CI, the job type-checks and
+builds before it commits.
 
 - Works without a token (60 API requests per hour; a run uses about 25). Set `GITHUB_TOKEN` for more.
 - Writes nothing at all when nothing changed, so the weekly job only commits real changes.
@@ -69,38 +68,26 @@ tests and builds before it commits.
 - If Vercel does not deploy commits made by the Actions bot, create a Vercel Deploy Hook and store
   its URL as the repository secret `VERCEL_DEPLOY_HOOK`; the workflow then triggers the deploy.
 
-## Recording a run
-
-```bash
-npm run record -- haystack-strategies --cwd ~/Haystack --as "~/Haystack" \
-  --note "Haystack at c745fe6" -- python3 -m attack strategies
-```
-
-The command runs in a pseudo-terminal so tools print colours. The recorder replaces local paths,
-refuses output that looks like a secret, and writes `public/casts/<name>.cast` (asciicast v2; v3 is
-also read). Register it under the project's `recordings` in `content/config.ts`. Record from a clean
-checkout of the commit you cite, so the recording matches the code on the page.
-
 ## Deploying
 
 Keep Vercel's **Next.js** framework preset and Node 24. A static export writes `README.md.html`
 for `README.md`, and the preset serves it at the extensionless URL; pointing the output directory
 at `out/` by hand would break those URLs. Redirects for the old site's URLs and the security
 headers (including a Content-Security-Policy limited to the chain endpoints the site uses) are in
-`vercel.json`; a test keeps the CSP in step with `lib/chain/networks.ts`.
+`vercel.json`. `next.config.ts` refuses to build when an endpoint in `lib/chain/networks.ts` is
+missing from the CSP's `connect-src`, because the browser would block it in production only.
 
 The canonical URL is set once in `lib/site.ts`.
 
 ## Layout
 
 ```
-app/            routes: welcome, [...path] (every file), /resume, /vfs/*.json, SHA256SUMS, sitemap
+app/            routes: welcome, [...path] (every file), /resume, /vfs/*.json, robots.txt
 components/     workbench (title bar, explorer, tabs, status bar, panel), editor, terminal
 content/        config.ts and the hand-written project pages
 data/           generated by the sync: GitHub snapshot, READMEs, pinned excerpts
 lib/vfs/        the builder and path logic        lib/terminal/  commands, completion, history
-lib/chain/      ABI, RPC, checksums               lib/ansi, lib/cast/  recording replay
-public/casts/   recorded terminal sessions        scripts/       sync, record, preview
+lib/chain/      ABI, RPC, address checksums       scripts/       sync, preview
 .github/        CI, weekly sync, Dependabot
 ```
 

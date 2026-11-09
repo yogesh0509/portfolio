@@ -119,17 +119,6 @@ const cat: Command = {
         out.push(...plainLines(...env.data.system.osRelease));
         continue;
       }
-      if (abs.toLowerCase() === "/sha256sums") {
-        // The published checksum list is generated at build time and is not a file in the tree.
-        try {
-          const res = await env.fetch("/SHA256SUMS");
-          out.push(...(res.ok ? plainLines(...(await res.text()).replace(/\n$/, "").split("\n")) : [error(`cat: ${typed}: could not be downloaded (HTTP ${res.status})`)]));
-        } catch {
-          out.push(error(`cat: ${typed}: could not be downloaded`));
-          status = 1;
-        }
-        continue;
-      }
       const node = lookup(env.tree, abs);
       if (!node) {
         out.push(error(`cat: ${typed}: No such file or directory`));

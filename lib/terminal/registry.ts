@@ -6,7 +6,6 @@ import { infoCommands, manCommand } from "./commands/info";
 import { legacyCommands } from "./commands/legacy";
 import { linuxCommands, whichCommand } from "./commands/linux";
 import { portsCommand, runCommand } from "./commands/run";
-import { sha256sum } from "./commands/verify";
 import { blank, bold, cmd, plain } from "./text";
 import type { Command } from "./types";
 
@@ -26,7 +25,7 @@ const EXAMPLES: Record<string, string> = {
   contact: "contact",
   resume: "resume",
   man: "man yogesh",
-  run: "run haystack",
+  run: "run web3-dream11",
   ports: "ports",
   git: "git log --oneline",
   gh: "gh pr list --merged",
@@ -34,7 +33,6 @@ const EXAMPLES: Record<string, string> = {
   "bitcoin-cli": "bitcoin-cli getblockcount",
   cast: "cast block-number",
   starkli: "starkli block-number",
-  sha256sum: "sha256sum README.md",
   uname: "uname -a",
   date: "date",
   sudo: "sudo ls",
@@ -72,12 +70,12 @@ const helpCommand: Command = {
       out.push(blank());
     }
     out.push(plain("Tab completes names and paths. ↑ and ↓ browse your history. Ctrl+L clears the screen."));
-    out.push([{ text: "Not sure where to start? Try " }, cmd("man yogesh"), { text: " or " }, cmd("run haystack"), { text: "." }]);
+    out.push([{ text: "Not sure where to start? Try " }, cmd("man yogesh"), { text: " or " }, cmd("run web3-dream11"), { text: "." }]);
     return { lines: out };
   },
 };
 
-const base: Command[] = [...fileCommands, ...infoCommands, runCommand, portsCommand, gitCommand, ghCommand, ...chainCommands, sha256sum, ...linuxCommands, ...legacyCommands];
+const base: Command[] = [...fileCommands, ...infoCommands, runCommand, portsCommand, gitCommand, ghCommand, ...chainCommands, ...linuxCommands, ...legacyCommands];
 
 /** Every command, in the order `help` lists them. */
 export const commands: Command[] = [...base, manCommand(() => commands), whichCommand(() => commands), helpCommand];

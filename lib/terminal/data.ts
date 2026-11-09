@@ -1,4 +1,4 @@
-import type { EducationEntry, ExperienceEntry, FeaturedProject, Recording } from "../../content/config";
+import type { EducationEntry, ExperienceEntry, FeaturedProject } from "../../content/config";
 import type { TerminalContract } from "../chain/types";
 import type { PullRequest, Snapshot } from "../github/schema";
 
@@ -24,7 +24,6 @@ export interface TerminalProject {
   liveStatus?: number | null;
   liveCheckedAt?: string;
   local?: { port: number; command: string };
-  recordings: Recording[];
   /** Repository description from GitHub, if any. */
   description: string | null;
 }
@@ -148,7 +147,6 @@ export function buildTerminalData(input: TerminalDataInput): TerminalData {
       liveStatus: demo?.status,
       liveCheckedAt: demo?.checkedAt,
       local: p.local,
-      recordings: p.recordings ?? [],
       description: repo?.description ?? null,
     };
   });

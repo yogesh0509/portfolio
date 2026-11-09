@@ -1,5 +1,5 @@
 /**
- * Links in this site come from data (GitHub, the config, recordings). Only these kinds may become a
+ * Links in this site come from data (GitHub and the config). Only these kinds may become a
  * clickable href: absolute http(s) and mailto URLs, and paths inside this site. Anything else, such
  * as `javascript:` or `data:`, is dropped, so a poisoned data file can never produce a script link.
  */

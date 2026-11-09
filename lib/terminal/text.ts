@@ -35,6 +35,6 @@ export function columns(rows: Span[][], gap = 2): Line[] {
 /** ISO timestamp to "2026-10-08". */
 export const day = (iso: string) => iso.slice(0, 10);
 
-/** Plain text of a line, for tests and copying. */
+/** Plain text of a line, for copying. */
 export const textOf = (line: Line) => line.map((s) => s.text).join("");
 export const allText = (ls: Line[]) => ls.map(textOf).join("\n");

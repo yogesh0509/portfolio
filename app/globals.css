@@ -36,7 +36,7 @@ body {
 }
 
 /*
- * Ubuntu's default terminal palette, used by the terminal and by replayed recordings. Five of the
+ * Ubuntu's default terminal palette, used by the terminal. Five of the
  * stock colours (black, red, blue, magenta, bright red) are too dark on the aubergine background to
  * meet the 4.5:1 text contrast minimum, so they are lightened. Check any new
  * colour against the background before adding it.

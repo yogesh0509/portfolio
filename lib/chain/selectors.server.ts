@@ -2,7 +2,7 @@ import { keccak_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
 import { canonical, parseSignature } from "./abi";
 
-/** Build time and tests only: the browser never hashes anything with keccak. */
+/** Build time only: the browser never hashes anything with keccak. */
 
 const keccakHex = (bytes: Uint8Array) => bytesToHex(keccak_256(bytes));
 

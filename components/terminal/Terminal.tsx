@@ -12,13 +12,11 @@ import { plain } from "@/lib/terminal/text";
 import type { Effect, Env, Line } from "@/lib/terminal/types";
 import { displayPath, pathKey } from "@/lib/vfs/paths";
 import { useWorkbench } from "../workbench/WorkbenchProvider";
-import CastPlayer from "./CastPlayer";
 import LineView, { Prompt } from "./LineView";
 
 type Block =
   | { id: number; kind: "output"; lines: Line[] }
-  | { id: number; kind: "command"; cwd: string; input: string; lines: Line[] | null }
-  | { id: number; kind: "cast"; url: string; title: string; stopped: boolean; finished: boolean };
+  | { id: number; kind: "command"; cwd: string; input: string; lines: Line[] | null };
 
 // Data is fetched once per page load, the first time the terminal opens.
 let dataPromise: Promise<TerminalData> | null = null;
@@ -92,29 +90,6 @@ export default function Terminal() {
     if (scroller) scroller.scrollTop = scroller.scrollHeight;
   }, [blocks]);
 
-  const castRunning = blocks.some((b) => b.kind === "cast" && !b.finished);
-
-  // The prompt is hidden during a replay, so Ctrl+C is caught on the window. A text selection means
-  // the visitor wants to copy, so that case is left to the browser.
-  useEffect(() => {
-    if (!castRunning) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.ctrlKey && !event.altKey && !event.metaKey && event.key.toLowerCase() === "c" && window.getSelection()?.isCollapsed !== false) {
-        event.preventDefault();
-        setBlocks((b) => [...b.map((x) => (x.kind === "cast" && !x.finished ? { ...x, stopped: true } : x)), { id: nextId(), kind: "output" as const, lines: [plain("^C")] }]);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [castRunning]);
-
-  // When a replay ends the prompt comes back; put the cursor in it so typing continues.
-  const wasCastRunning = useRef(false);
-  useEffect(() => {
-    if (wasCastRunning.current && !castRunning) inputRef.current?.focus();
-    wasCastRunning.current = castRunning;
-  }, [castRunning]);
-
   const apply = useCallback(
     (effects: Effect[]) => {
       for (const effect of effects) {
@@ -139,9 +114,6 @@ export default function Terminal() {
             break;
           case "copy":
             void navigator.clipboard?.writeText(effect.text).catch(() => {});
-            break;
-          case "replay":
-            setBlocks((b) => [...b, { id: nextId(), kind: "cast", url: effect.cast, title: effect.title, stopped: false, finished: false }]);
             break;
         }
       }
@@ -246,7 +218,7 @@ export default function Terminal() {
   if (!env || !data) return <p className="p-3 text-[#bbbbbb]">Connecting…</p>;
 
   const { user, host } = data.system;
-  const chips = busy || castRunning ? [] : chipsFor({ cwd, history }, env);
+  const chips = busy ? [] : chipsFor({ cwd, history }, env);
 
   return (
     <div className="flex min-h-full flex-col px-3 py-2 caret-ubuntu" onClick={onContainerClick}>
@@ -254,17 +226,6 @@ export default function Terminal() {
         {blocks.map((block) => {
           if (block.kind === "output") {
             return block.lines.map((line, i) => <LineView key={`${block.id}-${i}`} line={line} run={submit} />);
-          }
-          if (block.kind === "cast") {
-            return (
-              <CastPlayer
-                key={block.id}
-                url={block.url}
-                title={block.title}
-                stopped={block.stopped}
-                onDone={() => setBlocks((b) => b.map((x) => (x.id === block.id && x.kind === "cast" ? { ...x, finished: true } : x)))}
-              />
-            );
           }
           return (
             <div key={block.id}>
@@ -280,34 +241,32 @@ export default function Terminal() {
         })}
       </div>
 
-      {!castRunning && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-          }}
-          className="flex items-baseline"
-        >
-          <label htmlFor="terminal-input" className="sr-only">
-            Terminal input. Type a command, or press Tab to complete.
-          </label>
-          <Prompt user={user} host={host} path={displayPath(cwd)} />
-          <input
-            id="terminal-input"
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKeyDown}
-            // readOnly, not disabled: a disabled field loses focus, and the visitor would have to click again.
-            readOnly={busy}
-            autoComplete="off"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            enterKeyHint="send"
-            className="min-w-0 flex-1 bg-transparent font-[inherit] text-inherit outline-none"
-          />
-        </form>
-      )}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+        }}
+        className="flex items-baseline"
+      >
+        <label htmlFor="terminal-input" className="sr-only">
+          Terminal input. Type a command, or press Tab to complete.
+        </label>
+        <Prompt user={user} host={host} path={displayPath(cwd)} />
+        <input
+          id="terminal-input"
+          ref={inputRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={onKeyDown}
+          // readOnly, not disabled: a disabled field loses focus, and the visitor would have to click again.
+          readOnly={busy}
+          autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="send"
+          className="min-w-0 flex-1 bg-transparent font-[inherit] text-inherit outline-none"
+        />
+      </form>
 
       {chips.length > 0 && (
         <div role="group" aria-label="Suggested commands" className="flex flex-wrap gap-2 pt-2">
