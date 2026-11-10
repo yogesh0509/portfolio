@@ -128,8 +128,7 @@ function periodOf(entry: TerminalData["experience"][number]): string {
 function manYogesh(data: TerminalData): Line[] {
   const { profile } = data;
   const header = `YOGESH(1)${" ".repeat(24)}User Commands${" ".repeat(24)}YOGESH(1)`;
-  const firstSentence = profile.summary.split(". ")[0].replace(/\.$/, "");
-  const out: Line[] = [plain(header), blank(), section("NAME"), plain(`       yogesh - ${firstSentence.charAt(0).toLowerCase()}${firstSentence.slice(1)}`), blank()];
+  const out: Line[] = [plain(header), blank(), section("NAME"), plain(`       yogesh - ${profile.headline}`), blank()];
 
   out.push(section("DESCRIPTION"), ...body(profile.summary), blank());
 

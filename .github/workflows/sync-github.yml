@@ -1,30 +1,46 @@
 name: Sync GitHub data
 
-# Pulls my public GitHub data into data/, checks the site still builds with it, and
-# commits only if something really changed. The commit triggers a Vercel deploy.
+# Every Monday: pulls my public GitHub data into data/ and proposes it in ONE pull request from the
+# branch sync/github-data. Nothing reaches main until I merge that PR; my merge deploys as usual.
+#
+# While the PR is open, each run rebuilds the branch as "current main + one data commit" and
+# force-pushes it, so it is the same PR, always mergeable, and its Vercel Preview is exactly what
+# would merge. A comment on the PR says what was new that week; a week with no new data posts no
+# comment (the branch is still rebuilt if main moved). If main already has the data, the PR is closed.
+#
+# One-time setup: Settings > Actions > General > Workflow permissions >
+#   "Allow GitHub Actions to create and approve pull requests".
+# The branch belongs to this workflow: change content/config.ts on main, not on the branch.
 
 on:
   schedule:
-    - cron: "17 3 * * 1" # Mondays, 03:17 UTC
+    - cron: "17 3 * * 1" # Mondays, 03:17 UTC (GitHub often starts scheduled runs late)
   workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: sync-github
   cancel-in-progress: false
 
+env:
+  BRANCH: sync/github-data
+  BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+  GH_TOKEN: ${{ github.token }}
+  GH_REPO: ${{ github.repository }}
+
 jobs:
   sync:
+    # A manual run from another branch would run that branch's copy of this file.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    env:
-      # Optional. If Vercel does not deploy commits pushed by the Actions bot (it can block
-      # commits whose author has no Vercel access on a Hobby plan), create a Deploy Hook in
-      # Vercel, store its URL as this secret, and the last step triggers the deploy itself.
-      VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # every branch and its history: the PR branch and its merge base are needed
 
       - uses: actions/setup-node@v4
         with:
@@ -33,39 +49,141 @@ jobs:
 
       - run: npm ci
 
-      - name: Sync GitHub data
-        run: npm run sync
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Did anything under data/ change?
-        id: diff
+      - name: Find the open sync PR and use its data as the baseline
+        id: pr
         run: |
-          if [ -n "$(git status --porcelain data/)" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            git status --short data/
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No changes under data/."
+          number=$(gh pr list --head "$BRANCH" --base main --state open \
+            --json number,isCrossRepository \
+            --jq 'map(select(.isCrossRepository | not)) | .[0].number // empty')
+          remote_sha=$(git rev-parse --verify --quiet "refs/remotes/origin/$BRANCH" || true)
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+          echo "remote_sha=$remote_sha" >> "$GITHUB_OUTPUT"
+          if [ -z "$number" ]; then
+            echo "No open sync PR; comparing against main."
+            exit 0
           fi
 
-      # A push made with the built-in token does not trigger ci.yml, so this job runs the
-      # checks itself. A bad snapshot must not reach production.
-      - name: Check the site still builds with the new data
-        if: steps.diff.outputs.changed == 'true'
+          # Never overwrite commits pushed to the branch by hand.
+          authors=$(git log --format=%ae "HEAD..origin/$BRANCH" | sort -u)
+          if [ -n "$authors" ] && [ "$authors" != "$BOT_EMAIL" ]; then
+            echo "::error::$BRANCH has commits not made by this workflow. Merge or close PR #$number, or remove those commits. Nothing was changed."
+            exit 1
+          fi
+
+          # Compare against what the PR already proposes, so a week with nothing new does nothing.
+          # Only when main's data/ is unchanged since the PR was built; otherwise main's data is newer.
+          base=$(git merge-base HEAD "origin/$BRANCH")
+          if git diff --quiet "$base" HEAD -- data/; then
+            # git restore removes files the PR deleted, too (no overlay mode).
+            git restore --source="origin/$BRANCH" --worktree -- data/
+            echo "Comparing against the data in PR #$number."
+          else
+            echo "main changed data/ since PR #$number was built; comparing against main."
+          fi
+
+      - name: Sync GitHub data
+        id: sync
+        # --keep-going: a problem with my own inputs (an empty bio, a broken summary marker) keeps the
+        # previous value and lets the PR update; the last step then fails the run so I get an email.
+        run: npm run sync -- --keep-going
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SYNC_SUMMARY_FILE: ${{ runner.temp }}/sync-summary.md
+
+      - name: Build the sync commit (current main + data)
+        id: commit
+        env:
+          NUMBER: ${{ steps.pr.outputs.number }}
+          REMOTE_SHA: ${{ steps.pr.outputs.remote_sha }}
+        run: |
+          if [ -z "$(git status --porcelain -- data/)" ]; then
+            echo "data/ matches main."
+            if [ -n "$NUMBER" ]; then echo "action=close" >> "$GITHUB_OUTPUT"; else echo "action=none" >> "$GITHUB_OUTPUT"; fi
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "$BOT_EMAIL"
+          git switch -C "$BRANCH" # the same commit as main, so the changed data/ comes along
+          git add -A -- data/
+          git commit -q -m "chore(data): sync GitHub data"
+          if [ -n "$REMOTE_SHA" ] && [ -n "$NUMBER" ] && git diff --quiet "$REMOTE_SHA" HEAD; then
+            echo "PR #$NUMBER already has exactly this content; nothing to push."
+            echo "action=none" >> "$GITHUB_OUTPUT"
+          else
+            echo "action=push" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Checks exactly the tree that will be pushed. ci.yml also runs on the PR, but a run started
+      # by a PR from the built-in token waits for "Approve workflows to run"; approving is optional.
+      - name: Check the site still builds with this data
+        if: steps.commit.outputs.action == 'push'
         run: |
           npm run typecheck
           npm run build
 
-      - name: Commit and push
-        if: steps.diff.outputs.changed == 'true'
+      - name: Push and open or update the PR
+        if: steps.commit.outputs.action == 'push'
+        env:
+          NUMBER: ${{ steps.pr.outputs.number }}
+          REMOTE_SHA: ${{ steps.pr.outputs.remote_sha }}
+          CHANGED: ${{ steps.sync.outputs.changed }}
+          SUMMARY: ${{ runner.temp }}/sync-summary.md
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/
-          git commit -m "chore(data): sync GitHub data"
-          git push
+          # The built-in token may not update a branch so that its workflow files change (it has no
+          # "workflows" permission), which happens when main changed a workflow since the PR was built.
+          # Then close that PR and start a new one from main instead.
+          if [ -n "$REMOTE_SHA" ] && ! git diff --quiet "$REMOTE_SHA" HEAD -- .github/workflows; then
+            if [ -n "$NUMBER" ]; then
+              gh pr close "$NUMBER" --delete-branch --comment "main changed workflow files since this PR was built, which this job may not push to an existing branch. Continuing in a new PR."
+            else
+              git push origin --delete "$BRANCH" || true
+            fi
+            NUMBER=""
+            REMOTE_SHA=""
+          fi
+          # The lease refuses to overwrite the branch if it moved since this job read it
+          # (an empty REMOTE_SHA means the branch must not exist yet).
+          git push --force-with-lease="refs/heads/$BRANCH:$REMOTE_SHA" origin "HEAD:refs/heads/$BRANCH"
+          if [ -z "$NUMBER" ]; then
+            {
+              cat "$SUMMARY"
+              echo
+              echo "Opened by the weekly sync. While this PR is open, each Monday run rebuilds this branch as current main plus one data commit and comments with what was new. Do not push to this branch; change content/config.ts on main. Closing the PR only postpones it until the next run that finds a change."
+            } > "$RUNNER_TEMP/pr-body.md"
+            gh pr create --base main --head "$BRANCH" \
+              --title "chore(data): sync GitHub data" --body-file "$RUNNER_TEMP/pr-body.md"
+          elif [ "$CHANGED" = "true" ]; then
+            {
+              cat "$SUMMARY"
+              echo
+              echo "Files changed since the previous version of this PR:"
+              echo '```'
+              git diff --stat "$REMOTE_SHA" HEAD -- data/
+              echo '```'
+            } > "$RUNNER_TEMP/comment.md"
+            gh pr comment "$NUMBER" --body-file "$RUNNER_TEMP/comment.md"
+          else
+            echo "Rebuilt PR #$NUMBER on top of the current main; no new data, so no comment."
+          fi
 
-      - name: Trigger Vercel deploy
-        if: steps.diff.outputs.changed == 'true' && env.VERCEL_DEPLOY_HOOK != ''
-        run: curl --fail --silent --show-error -X POST "$VERCEL_DEPLOY_HOOK"
+      - name: Close the PR when main already has this data
+        if: steps.commit.outputs.action == 'close'
+        env:
+          NUMBER: ${{ steps.pr.outputs.number }}
+        run: gh pr close "$NUMBER" --delete-branch --comment "main already contains this data, so this PR is no longer needed."
+
+      - name: Report problems with my own inputs
+        # always(): report the cause even when a later step (the build) failed because of it.
+        if: always() && steps.sync.outputs.problems != ''
+        env:
+          SUMMARY: ${{ runner.temp }}/sync-summary.md
+        run: |
+          number=$(gh pr list --head "$BRANCH" --base main --state open \
+            --json number,isCrossRepository \
+            --jq 'map(select(.isCrossRepository | not)) | .[0].number // empty')
+          if [ -n "$number" ]; then
+            { echo "The sync kept older values because of these problems:"; echo; grep -F -- '**Problem:**' "$SUMMARY"; } > "$RUNNER_TEMP/problems.md"
+            gh pr comment "$number" --body-file "$RUNNER_TEMP/problems.md"
+          fi
+          echo "::error::The sync reported problems (${{ steps.sync.outputs.problems }}); see the job summary."
+          exit 1

@@ -52,12 +52,13 @@ export type ApiUser = z.infer<typeof ApiUserSchema>;
 export type ApiRepo = z.infer<typeof ApiRepoSchema>;
 export type ApiSearchItem = z.infer<typeof ApiSearchItemSchema>;
 
-export function toProfile(user: ApiUser): NonNullable<Snapshot["profile"]> {
+export function toProfile(user: ApiUser, summary: string | null): NonNullable<Snapshot["profile"]> {
   return {
     login: user.login,
     name: user.name,
     bio: user.bio,
     location: user.location,
+    summary,
     followers: user.followers,
     publicRepos: user.public_repos,
     createdAt: user.created_at,
@@ -217,18 +218,26 @@ export function sortSnapshot(snapshot: Snapshot): Snapshot {
 /**
  * The part of a snapshot that decides whether anything really changed.
  * `syncedAt` and each demo's `checkedAt` move on every run, so they are left out;
- * otherwise the weekly job would commit every week.
+ * otherwise the weekly job would commit every week. So is the last push to this site's own
+ * repository (`ownRepo`, owner/name): the job's own push moves it, so keeping it would make
+ * every run find a change caused by the run before.
  */
-export function comparable(snapshot: Snapshot): unknown {
+export function comparable(snapshot: Snapshot, ownRepo?: string): unknown {
+  const own = ownRepo?.toLowerCase();
   return {
     ...snapshot,
     syncedAt: null,
+    // Ordered by name, not by last push: otherwise a new push to this repo would still change its
+    // position in the list after its pushedAt is hidden.
+    repos: snapshot.repos
+      .map((repo) => (repo.fullName.toLowerCase() === own ? { ...repo, pushedAt: null } : repo))
+      .sort((a, b) => a.fullName.localeCompare(b.fullName)),
     demos: snapshot.demos.map((demo: Demo) => ({ ...demo, checkedAt: null })),
   };
 }
 
-export function snapshotsDiffer(previous: Snapshot, next: Snapshot): boolean {
-  return JSON.stringify(comparable(sortSnapshot(previous))) !== JSON.stringify(comparable(sortSnapshot(next)));
+export function snapshotsDiffer(previous: Snapshot, next: Snapshot, ownRepo?: string): boolean {
+  return JSON.stringify(comparable(sortSnapshot(previous), ownRepo)) !== JSON.stringify(comparable(sortSnapshot(next), ownRepo));
 }
 
 export const serializeSnapshot = (snapshot: Snapshot) => JSON.stringify(sortSnapshot(snapshot), null, 2) + "\n";

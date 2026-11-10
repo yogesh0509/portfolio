@@ -1,16 +1,58 @@
 {
   "schemaVersion": 1,
-  "syncedAt": "2026-11-09T11:40:22.139Z",
+  "syncedAt": "2026-11-10T23:28:40.022Z",
   "profile": {
     "login": "yogesh0509",
     "name": "Yogesh Agrawal",
     "bio": "Backend & blockchain engineer | Open Source",
-    "location": "Bangalore",
+    "location": "Bengaluru, Karnataka, India",
+    "summary": "I am a backend engineer in Bangalore. I am interested in Bitcoin, stablecoin design and cross-chain systems.",
     "followers": 16,
     "publicRepos": 29,
     "createdAt": "2021-12-19T18:46:03Z"
   },
   "repos": [
+    {
+      "name": "Haystack",
+      "fullName": "yogesh0509/Haystack",
+      "description": "Private Electrum Sync",
+      "language": "Rust",
+      "languages": {
+        "Dockerfile": 2566,
+        "JavaScript": 40248,
+        "Python": 76868,
+        "Rust": 186567
+      },
+      "stars": 2,
+      "forks": 0,
+      "topics": [],
+      "homepage": null,
+      "createdAt": "2026-09-08T11:35:18Z",
+      "pushedAt": "2026-11-10T13:31:08Z",
+      "fork": false,
+      "archived": false,
+      "htmlUrl": "https://github.com/yogesh0509/Haystack",
+      "defaultBranch": "main",
+      "hasReadme": false
+    },
+    {
+      "name": "yogesh0509",
+      "fullName": "yogesh0509/yogesh0509",
+      "description": "My personal repository",
+      "language": null,
+      "languages": {},
+      "stars": 0,
+      "forks": 0,
+      "topics": [],
+      "homepage": null,
+      "createdAt": "2022-06-10T01:49:16Z",
+      "pushedAt": "2026-11-10T12:33:11Z",
+      "fork": false,
+      "archived": false,
+      "htmlUrl": "https://github.com/yogesh0509/yogesh0509",
+      "defaultBranch": "main",
+      "hasReadme": false
+    },
     {
       "name": "portfolio",
       "fullName": "yogesh0509/portfolio",
@@ -29,12 +71,12 @@
       "topics": [],
       "homepage": "https://www.yogesh0509.info",
       "createdAt": "2024-02-01T07:05:35Z",
-      "pushedAt": "2026-11-02T11:18:00Z",
+      "pushedAt": "2026-11-09T11:40:35Z",
       "fork": false,
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/portfolio",
       "defaultBranch": "main",
-      "hasReadme": true
+      "hasReadme": false
     },
     {
       "name": "jarvis",
@@ -57,46 +99,6 @@
       "htmlUrl": "https://github.com/yogesh0509/jarvis",
       "defaultBranch": "main",
       "hasReadme": true
-    },
-    {
-      "name": "yogesh0509",
-      "fullName": "yogesh0509/yogesh0509",
-      "description": "My personal repository",
-      "language": null,
-      "languages": {},
-      "stars": 0,
-      "forks": 0,
-      "topics": [],
-      "homepage": null,
-      "createdAt": "2022-06-10T01:49:16Z",
-      "pushedAt": "2026-10-12T22:42:23Z",
-      "fork": false,
-      "archived": false,
-      "htmlUrl": "https://github.com/yogesh0509/yogesh0509",
-      "defaultBranch": "main",
-      "hasReadme": false
-    },
-    {
-      "name": "Haystack",
-      "fullName": "yogesh0509/Haystack",
-      "description": "Private Electrum Sync",
-      "language": "Rust",
-      "languages": {
-        "Dockerfile": 2566,
-        "Python": 76868,
-        "Rust": 186567
-      },
-      "stars": 2,
-      "forks": 0,
-      "topics": [],
-      "homepage": null,
-      "createdAt": "2026-09-08T11:35:18Z",
-      "pushedAt": "2026-10-05T15:27:22Z",
-      "fork": false,
-      "archived": false,
-      "htmlUrl": "https://github.com/yogesh0509/Haystack",
-      "defaultBranch": "main",
-      "hasReadme": false
     },
     {
       "name": "tech-lightlink-engineering-yogesh",
@@ -662,7 +664,7 @@
       "repo": "yogesh0509/web3-DREAM11",
       "url": "https://web3-dream-11.vercel.app",
       "status": 200,
-      "checkedAt": "2026-11-09T11:40:19.329Z"
+      "checkedAt": "2026-11-10T23:28:28.114Z"
     }
   ]
 }

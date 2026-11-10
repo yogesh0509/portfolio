@@ -86,6 +86,8 @@ export interface ExperienceEntry {
   org: string;
   place: string;
   roles: Role[];
+  /** The "Tech stack:" line of the résumé entry, when the résumé Doc has one. */
+  stack?: string[];
   bullets: string[];
 }
 
@@ -93,23 +95,22 @@ export interface EducationEntry {
   school: string;
   place: string;
   degree: string;
+  /** Extra fields from the résumé Doc's degree line, e.g. "CGPA 8.7/10". */
+  notes?: string[];
   from: number;
   to: number;
 }
 
+/**
+ * Links and addresses only. My name, headline (GitHub bio), summary and location come from my GitHub
+ * profile through the sync (data/github.json), so the site and GitHub cannot disagree; see lib/profile.ts.
+ */
 export const profile = {
-  name: "Yogesh Agrawal",
   handle: "yogesh0509",
-  location: "Bengaluru, Karnataka, India",
-  headline: "GSoC'24 @Djed stablecoin | Blockchain | learning Rust and ZK | MERN",
-  summary:
-    "Engineer passionate about backend systems, compilers, and blockchain. " +
-    "Experienced in MERN stack, Rust, and DeFi development. " +
-    "Always exploring low-level architecture, system design, and building efficient solutions.",
   email: "agrawalyogesh5047@gmail.com",
   github: "https://github.com/yogesh0509",
   linkedin: "https://www.linkedin.com/in/yogesh0509",
-  /** Public link to the PDF résumé. Empty until one is provided. */
+  /** Public link to a PDF résumé, used only until the sync has read `resumePdf` (below). */
   resumeUrl: "",
 } as const;
 
@@ -148,6 +149,18 @@ export const system = {
     "LOGO=ubuntu-logo",
   ],
 } as const;
+
+/**
+ * My résumé is a private Google Doc. I export it as a PDF and keep that PDF in Google Drive, shared
+ * as "Anyone with the link: Viewer". The weekly sync downloads the PDF and reads experience,
+ * education and skills from it (lib/resume/pdf.ts and parse.ts). `url` is the PDF's Drive share link;
+ * the site also links it as "Download the PDF".
+ *
+ * The three lists below are the fallback. All three are used together while the PDF is not set,
+ * cannot be downloaded, or its EXPERIENCE, EDUCATION or SKILLS section does not parse. The sync's
+ * summary says which applied.
+ */
+export const resumePdf = { url: "https://drive.google.com/file/d/1mRttsLo2FdQwuxZXbwEEjKLLH_4uoZ_W/view?usp=sharing" };
 
 export const experience: ExperienceEntry[] = [
   {
@@ -496,7 +509,7 @@ export const projects: FeaturedProject[] = [
 /** Repos that never appear in the generated /archive folder. Compared case-insensitively. */
 export const excludedRepos: string[] = [
   "yogesh0509", // profile README
-  "portfolio-yogesh0509", // this site
+  "portfolio", // this site
   "tech-lightlink-engineering-yogesh", // a hiring take-home exercise
   "durgapur-infra", // a client's website, unrelated to the rest
   "BlockDawgs", // template README only

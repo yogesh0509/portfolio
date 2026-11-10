@@ -1,3 +1,4 @@
+import { SITE_REPO } from "../../site";
 import { splitFlags } from "../parse";
 import { closest } from "../suggest";
 import { blank, bold, cmd, color, columns, error, link, plain } from "../text";
@@ -65,7 +66,7 @@ export const ghCommand: Command = {
     if (group === "repo" && action === "view") {
       const typed = rest[0];
       const project = typed ? findProject(data, typed) : projectAt(data, session.cwd);
-      const wanted = (typed ?? project?.repo ?? `${data.profile.handle}/portfolio-yogesh0509`).toLowerCase();
+      const wanted = (typed ?? project?.repo ?? SITE_REPO).toLowerCase();
       const repo = data.repos.find((r) => r.fullName.toLowerCase() === wanted || r.name.toLowerCase() === wanted.split("/").pop());
       if (repo) {
         return ok([

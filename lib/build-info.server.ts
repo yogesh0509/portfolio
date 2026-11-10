@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { SITE_REPO } from "./site";
 
 /** What the status bar shows about this deployment. Resolved once, at build time. */
 export interface BuildInfo {
@@ -21,6 +22,6 @@ export function getBuildInfo(): BuildInfo {
     // Vercel sets these during a deployment build; locally fall back to git.
     commit: process.env.VERCEL_GIT_COMMIT_SHA ?? gitOutput(["rev-parse", "HEAD"]),
     branch: process.env.VERCEL_GIT_COMMIT_REF ?? (gitOutput(["rev-parse", "--abbrev-ref", "HEAD"]) || "main"),
-    repoUrl: "https://github.com/yogesh0509/portfolio-yogesh0509",
+    repoUrl: `https://github.com/${SITE_REPO}`,
   };
 }

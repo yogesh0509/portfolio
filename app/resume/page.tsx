@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PrintButton from "@/components/editor/PrintButton";
-import { education, experience, profile, projects, skills } from "@/content/config";
+import { projects } from "@/content/config";
+import { safeHref } from "@/lib/safe-url";
 import { formatMonth } from "@/lib/vfs/build";
+import { getProfile, getResume } from "@/lib/vfs/load.server";
+
+const profile = getProfile();
+const { experience, education, skills, sections } = getResume();
 
 export const metadata: Metadata = {
   title: "Résumé",
@@ -13,8 +18,9 @@ export const metadata: Metadata = {
 const range = (from: string, to: string | null) => `${formatMonth(from)} to ${to ? formatMonth(to) : "present"}`;
 
 /**
- * The résumé, built from the same configuration as the rest of the site (and as resume.json),
- * so the two cannot drift apart. The phone number on my LinkedIn export is deliberately not here.
+ * The résumé, built from the same data as the rest of the site (and as resume.json), so the two
+ * cannot drift apart: my résumé PDF when the sync could read all of it, otherwise
+ * content/config.ts. The phone number in the PDF is deliberately not here.
  */
 export default function ResumePage() {
   return (
@@ -57,6 +63,7 @@ export default function ResumePage() {
                 <strong>{role.title}</strong>, {range(role.from, role.to)}
               </p>
             ))}
+            {entry.stack && entry.stack.length > 0 && <p className="text-sm">Tech stack: {entry.stack.join(", ")}</p>}
             {entry.bullets.length > 0 && (
               <ul>
                 {entry.bullets.map((bullet) => (
@@ -68,22 +75,59 @@ export default function ResumePage() {
         ))}
       </section>
 
-      <section aria-labelledby="r-work">
-        <h2 id="r-work">Selected work</h2>
-        <ul>
-          {projects.map((project) => (
-            <li key={project.slug}>
-              <strong>{project.title}</strong> ({project.period}): {project.tagline}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {sections.length > 0 ? (
+        sections.map((section, s) => (
+          <section key={section.title} aria-labelledby={`r-section-${s}`}>
+            <h2 id={`r-section-${s}`}>{section.title}</h2>
+            {section.entries.map((entry, e) => (
+              <div key={e} className="mb-3 break-inside-avoid">
+                <h3>
+                  {entry.title}
+                  {entry.period && <span className="font-normal">, {entry.period}</span>}
+                </h3>
+                {(entry.notes.length > 0 || entry.links.length > 0) && (
+                  <p className="text-sm">
+                    {entry.notes.join(" · ")}
+                    {entry.notes.length > 0 && entry.links.length > 0 && " · "}
+                    {entry.links.map((link, l) => (
+                      <span key={link.url}>
+                        {l > 0 && " · "}
+                        <a href={safeHref(link.url)}>{link.label}</a>
+                      </span>
+                    ))}
+                  </p>
+                )}
+                {entry.stack.length > 0 && <p className="text-sm">Tech stack: {entry.stack.join(", ")}</p>}
+                {entry.bullets.length > 0 && (
+                  <ul>
+                    {entry.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </section>
+        ))
+      ) : (
+        <section aria-labelledby="r-work">
+          <h2 id="r-work">Selected work</h2>
+          <ul>
+            {projects.map((project) => (
+              <li key={project.slug}>
+                <strong>{project.title}</strong> ({project.period}): {project.tagline}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="r-education">
         <h2 id="r-education">Education</h2>
         {education.map((e) => (
-          <p key={e.school}>
+          <p key={`${e.school}-${e.degree}`}>
             {e.degree}, {e.school}, {e.place}, {e.from} to {e.to}
+            {e.notes && e.notes.length > 0 && <>. {e.notes.join(", ")}</>}
           </p>
         ))}
       </section>

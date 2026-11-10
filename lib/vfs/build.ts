@@ -3,6 +3,9 @@ import { canonical, parseSignature } from "../chain/abi";
 import { addressUrl, NETWORKS } from "../chain/networks";
 import type { PullRequest, Snapshot } from "../github/schema";
 import { langFromFilename, type LangId } from "../languages";
+import type { SiteProfile } from "../profile";
+import type { ResumeSection } from "../resume/schema";
+import { SITE_REPO } from "../site";
 import { excerptHeader, excerptName, permalink } from "./excerpt";
 import { isReservedTopLevel } from "./paths";
 import { countLines } from "./tree";
@@ -10,20 +13,12 @@ import type { FileLinks, MarkdownSource, VfsDir, VfsFile, VfsNode } from "./type
 
 /** Everything the builder needs. Pure data in, tree out: no disk access in this file. */
 export interface SiteConfig {
-  profile: {
-    name: string;
-    handle: string;
-    location: string;
-    headline: string;
-    summary: string;
-    email: string;
-    github: string;
-    linkedin: string;
-    resumeUrl: string;
-  };
+  profile: SiteProfile;
   experience: ExperienceEntry[];
   education: EducationEntry[];
   skills: { group: string; items: string[] }[];
+  /** The résumé PDF's other sections (projects, research...); empty while the site uses the fallback. */
+  resumeSections?: ResumeSection[];
   projects: FeaturedProject[];
   excludedRepos: string[];
 }
@@ -40,10 +35,10 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-/** "2026-10" becomes "October 2026". Fixed English names keep the build deterministic. */
+/** "2026-10" becomes "October 2026", "2026" stays "2026". Fixed English names keep the build deterministic. */
 export function formatMonth(value: string): string {
   const [year, month] = value.split("-");
-  return `${MONTHS[Number(month) - 1] ?? month} ${year}`;
+  return month ? `${MONTHS[Number(month) - 1] ?? month} ${year}` : year;
 }
 
 function formatRole(role: Role): string {
@@ -76,6 +71,17 @@ function dir(parent: string, name: string, children: VfsNode[]): VfsDir {
 }
 
 const day = (iso: string) => iso.slice(0, 10);
+
+/**
+ * Makes text from outside this repo (my GitHub profile) show literally inside generated Markdown:
+ * without it, `Map<String, List<T>>` would lose `<T>` as an HTML tag and `a*b*c` would turn italic.
+ */
+export function escapeMarkdown(text: string): string {
+  return text
+    .replace(/[\\`*_[\]<>]/g, "\\$&")
+    .replace(/^([#+-])/, "\\$1") // a heading or a bullet
+    .replace(/^(\d+)([.)])/, "$1\\$2"); // a numbered list, "1." or "1)"
+}
 
 function pullRequestsFor(project: FeaturedProject, snapshot: Snapshot): PullRequest[] {
   const repos = [project.repo, ...(project.extraRepos ?? [])].map((r) => r.toLowerCase());
@@ -139,13 +145,15 @@ function projectReadme(project: FeaturedProject, snapshot: Snapshot, body: strin
 }
 
 function experienceMarkdown(entry: ExperienceEntry): string {
-  const lines = [`# ${entry.org}`, "", entry.place, ""];
+  // The text may come from my résumé Doc, so it is escaped: it must show literally.
+  const lines = [`# ${escapeMarkdown(entry.org)}`, "", escapeMarkdown(entry.place), ""];
   for (const role of entry.roles) {
-    lines.push(`## ${role.title}`, "", formatRole(role), "");
+    lines.push(`## ${escapeMarkdown(role.title)}`, "", formatRole(role), "");
   }
+  if (entry.stack && entry.stack.length > 0) lines.push(`**Tech stack:** ${escapeMarkdown(entry.stack.join(", "))}`, "");
   if (entry.bullets.length > 0) {
     lines.push("## What I did", "");
-    for (const bullet of entry.bullets) lines.push(`- ${bullet}`);
+    for (const bullet of entry.bullets) lines.push(`- ${escapeMarkdown(bullet)}`);
     lines.push("");
   }
   return lines.join("\n");
@@ -155,7 +163,7 @@ function welcomeMarkdown(config: SiteConfig, snapshot: Snapshot): string {
   const { profile } = config;
   const current = config.experience[0];
   const currentRole = current?.roles.find((r) => r.to === null);
-  const lines = [`# ${profile.name}`, "", profile.summary, ""];
+  const lines = [`# ${escapeMarkdown(profile.name)}`, "", escapeMarkdown(profile.summary), ""];
   if (current && currentRole) lines.push(`${currentRole.title} at ${current.org}, ${current.place}.`, "");
 
   lines.push("## Start", "");
@@ -187,10 +195,31 @@ function welcomeMarkdown(config: SiteConfig, snapshot: Snapshot): string {
   lines.push("---", "", "Everything here is clickable. Press Ctrl+P to open any file, or type `help` in the terminal below.", "");
   lines.push(
     "This site is a static build. The project pages and the terminal are generated from my GitHub data, which a weekly job refreshes. " +
-      "The source is [yogesh0509/portfolio-yogesh0509](https://github.com/yogesh0509/portfolio-yogesh0509).",
+      `The source is [${SITE_REPO}](https://github.com/${SITE_REPO}).`,
     "",
   );
   return lines.join("\n");
+}
+
+function resumeExtras(sections: ResumeSection[]) {
+  const entries = (s: ResumeSection) => s.entries.map((e) => ({ ...e, section: s.title }));
+  const research = sections.filter((s) => /research|publication/i.test(s.title)).flatMap(entries);
+  const others = sections.filter((s) => !/research|publication/i.test(s.title)).flatMap(entries);
+  const describe = (e: (typeof others)[number]) => [e.section, ...e.notes, e.period].filter(Boolean).join(" · ");
+  return {
+    ...(others.length > 0 && {
+      projects: others.map((e) => ({
+        name: e.title,
+        description: describe(e),
+        highlights: e.bullets,
+        keywords: e.stack,
+        ...(e.links[0] ? { url: e.links[0].url } : {}),
+      })),
+    }),
+    ...(research.length > 0 && {
+      publications: research.map((e) => ({ name: e.title, summary: [describe(e), ...e.bullets].join(" "), ...(e.links[0] ? { url: e.links[0].url } : {}) })),
+    }),
+  };
 }
 
 /** A JSON Resume (jsonresume.org) document built from the same config as the site. */
@@ -203,7 +232,7 @@ function resumeJson(config: SiteConfig): string {
       label: profile.headline,
       email: profile.email,
       summary: profile.summary,
-      location: { city: "Bengaluru", region: "Karnataka", countryCode: "IN" },
+      location: { address: profile.location },
       profiles: [
         { network: "GitHub", username: profile.handle, url: profile.github },
         { network: "LinkedIn", username: profile.handle, url: profile.linkedin },
@@ -227,6 +256,9 @@ function resumeJson(config: SiteConfig): string {
       endDate: String(e.to),
     })),
     skills: config.skills.map((s) => ({ name: s.group, keywords: s.items })),
+    // The résumé's other sections: research as publications, everything else (projects, open
+    // source, hackathons) as projects. Periods stay as written, so they go in the description.
+    ...resumeExtras(config.resumeSections ?? []),
   };
   return JSON.stringify(doc, null, 2) + "\n";
 }

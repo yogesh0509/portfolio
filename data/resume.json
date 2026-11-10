@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "pdfUrl": "https://drive.google.com/file/d/1mRttsLo2FdQwuxZXbwEEjKLLH_4uoZ_W/view?usp=sharing",
+  "experience": [
+    {
+      "id": "athenahealth",
+      "org": "athenahealth",
+      "place": "Bengaluru, India",
+      "roles": [
+        {
+          "title": "Member of Technical Staff",
+          "from": "2026-10",
+          "to": null
+        },
+        {
+          "title": "Associate Member of Technical Staff",
+          "from": "2025-07",
+          "to": "2026-09"
+        },
+        {
+          "title": "Product Engineering Intern",
+          "from": "2025-01",
+          "to": "2025-06"
+        }
+      ],
+      "stack": [
+        "Java",
+        "Spring Boot",
+        "Perl",
+        "TypeScript",
+        "React",
+        "Node.js",
+        "AWS",
+        "Docker",
+        "Jenkins",
+        "Terraform"
+      ],
+      "bullets": [
+        "Engineered a Java/Spring Boot pipeline that decouples CMS quality reporting from a legacy Perl/Oracle monolith, extracting enrollment and measure results from Snowflake and publishing Kafka change events to scoring services.",
+        "Led multi-region DR (us-west-2 failover) for 5+ production services via Terraform; drove SonarQube hardening."
+      ]
+    },
+    {
+      "id": "hashstack",
+      "org": "Hashstack",
+      "place": "Bengaluru, India",
+      "roles": [
+        {
+          "title": "SDE Intern",
+          "from": "2024-03",
+          "to": "2024-12"
+        }
+      ],
+      "stack": [
+        "TypeScript",
+        "Node.js",
+        "Starknet",
+        "Prisma",
+        "AWS",
+        "Docker"
+      ],
+      "bullets": [
+        "Built an internal smart contract SDK and led API development for third-party DeFi integrations.",
+        "Built a backend relayer that batches users' Starknet vault deposits, bridges them to Ethereum with StarkGate and supplies them to Aave and Compound, so many users share one L1 transaction's gas."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "school": "BMS College of Engineering",
+      "place": "Bengaluru, India",
+      "degree": "B.E., Information Science and Engineering",
+      "notes": [
+        "CGPA 8.7/10"
+      ],
+      "from": 2021,
+      "to": 2025
+    }
+  ],
+  "skills": [
+    {
+      "group": "Languages",
+      "items": [
+        "Rust",
+        "Solidity",
+        "Cairo",
+        "TypeScript",
+        "JavaScript",
+        "Java",
+        "Python",
+        "C++",
+        "Perl",
+        "SQL"
+      ]
+    },
+    {
+      "group": "Blockchain",
+      "items": [
+        "Foundry",
+        "Hardhat",
+        "Chainlink (CCIP, Functions, Automation)",
+        "Starknet",
+        "ethers.js",
+        "Bitcoin Dev Kit"
+      ]
+    },
+    {
+      "group": "Backend",
+      "items": [
+        "Spring Boot",
+        "Node.js",
+        "PostgreSQL",
+        "Prisma",
+        "Docker",
+        "AWS",
+        "Terraform",
+        "Jenkins",
+        "GitHub Actions"
+      ]
+    },
+    {
+      "group": "Frontend",
+      "items": [
+        "React",
+        "Next.js",
+        "Tailwind CSS"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Open source",
+      "entries": [
+        {
+          "title": "Google Summer of Code",
+          "period": "May 2024 – Sep 2024",
+          "stack": [],
+          "links": [
+            {
+              "label": "Certificate",
+              "url": "https://drive.google.com/file/d/1qamOrfQoeyAVGE1GquFAoIO9u6cl_DpQ/view?usp=drive_link"
+            }
+          ],
+          "notes": [
+            "AOSSIE"
+          ],
+          "bullets": [
+            "Developed, tested and deployed an oracle adapter for Djed, a crypto-backed stablecoin on EVM networks.",
+            "Worked on Djed Shu's converter from 1-price to 2-price oracles, tracking 24-hour max and min prices."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Projects",
+      "entries": [
+        {
+          "title": "Haystack",
+          "period": "2026",
+          "stack": [
+            "Rust",
+            "Python",
+            "BDK (Bitcoin Dev Kit)",
+            "Docker"
+          ],
+          "links": [
+            {
+              "label": "github.com/yogesh0509/Haystack",
+              "url": "https://github.com/yogesh0509/Haystack"
+            }
+          ],
+          "notes": [
+            "BOSS Battle winner (Cypherpunk track)"
+          ],
+          "bullets": [
+            "Built private address sync for Bitcoin light wallets: each real address is queried from an Electrum server among HMAC-derived decoys, so the server can't easily tell which addresses are the wallet's.",
+            "Wrote an attacker module that tries to pick out the real addresses and scores the remaining privacy in bits."
+          ]
+        },
+        {
+          "title": "web3-dream11",
+          "period": null,
+          "stack": [
+            "Solidity",
+            "JavaScript",
+            "Foundry",
+            "Hardhat",
+            "Chainlink",
+            "ethers.js",
+            "Next.js",
+            "Tailwind CSS"
+          ],
+          "links": [
+            {
+              "label": "GitHub",
+              "url": "https://github.com/yogesh0509/web3-DREAM11"
+            }
+          ],
+          "notes": [],
+          "bullets": [
+            "Built a fantasy-cricket marketplace on Base Sepolia where teams bid for players in on-chain auctions.",
+            "Used Chainlink Automation to run the auction clock and Chainlink Functions to fetch player rankings."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Research",
+      "entries": [
+        {
+          "title": "Djed Shu: A Stablecoin Protocol with Two Oracle Prices",
+          "period": "2026",
+          "stack": [],
+          "links": [
+            {
+              "label": "Paper",
+              "url": "https://www.academia.edu/165283816/Djed_Shu_A_Stablecoin_Protocol_with_Two_Oracles_Protocol_Description_Zahnentferner_The_Stable_Order?source=swp_share"
+            }
+          ],
+          "notes": [
+            "Under review"
+          ],
+          "bullets": [
+            "Co-authored a paper on Djed Shu, a stablecoin that uses two oracle prices to resist manipulation and delays.",
+            "Wrote the paper's stability proofs (Theorems 1–8) for the two-price setting, and its sections on how the rolling-window oracle affects the price spread and on empirical validation with on-chain data from Zephyr."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Hackathons",
+      "entries": [
+        {
+          "title": "Starknet AI Agent Hackathon - Shikamaru Protocol",
+          "period": "Jan 2025 – Feb 2025",
+          "stack": [
+            "Cairo",
+            "TypeScript",
+            "Foundry",
+            "Eliza",
+            "Next.js",
+            "Tailwind CSS"
+          ],
+          "links": [
+            {
+              "label": "GitHub",
+              "url": "https://github.com/yogesh0509/Shikamaru-Protocol"
+            }
+          ],
+          "notes": [
+            "Winner"
+          ],
+          "bullets": [
+            "Architected a decentralized mutual fund on Starknet where multi-agent AI (Eliza) manages risk-stratified portfolios across lending protocols and AMM liquidity pools.",
+            "Built Cairo contracts (Pool Manager, Strategy Manager, Token Handler) for programmatic fund allocation."
+          ]
+        }
+      ]
+    }
+  ],
+  "notes": []
+}

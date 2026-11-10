@@ -54,6 +54,11 @@ export const ProfileSchema = z.object({
   name: z.string().nullable(),
   bio: z.string().nullable(),
   location: z.string().nullable(),
+  /**
+   * The text between <!-- portfolio:summary --> and <!-- /portfolio:summary --> in my profile
+   * README (github.com/yogesh0509/yogesh0509), as plain text. Null before the first sync that read it.
+   */
+  summary: z.string().nullable().default(null),
   followers: z.number(),
   publicRepos: z.number(),
   createdAt: z.string(),

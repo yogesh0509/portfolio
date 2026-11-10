@@ -28,9 +28,10 @@ data/ (GitHub snapshot) ┘   (pure function)     file system ├─> terminal: 
                                                             └─> /vfs/*.json (terminal data)
 ```
 
-- **One source of truth.** `content/config.ts` lists who I am, the featured projects, the testnet
-  contracts and which code to excerpt. `data/` holds what GitHub says, refreshed weekly. Nothing
-  else lists a project, so there is one place to edit.
+- **One source of truth.** `content/config.ts` lists my links, the featured projects, the testnet
+  contracts and which code to excerpt. `data/` holds what GitHub says, refreshed weekly, including
+  my name, headline (GitHub bio), location and summary (see below), and what my résumé PDF says.
+  Nothing else lists a project, so there is one place to edit.
 - **A virtual file system (VFS).** `lib/vfs/build.ts` turns the two inputs into a tree of files.
   Pages, the explorer, Quick Open and the terminal all read that tree, so they cannot disagree.
 - **Real code, pinned.** Each project shows excerpts of code I wrote, fetched at a pinned commit
@@ -57,16 +58,55 @@ EVM contract addresses must be EIP-55 checksummed or the build fails: a typo is 
 ## The GitHub sync
 
 `npm run sync` writes `data/github.json`, `data/readmes/` and `data/excerpts/`.
-`.github/workflows/sync-github.yml` runs it every Monday and commits only if something really
-changed. Because a push made with the built-in token does not trigger CI, the job type-checks and
-builds before it commits.
 
+`.github/workflows/sync-github.yml` runs it every Monday and proposes the result in **one pull
+request** from the branch `sync/github-data`; nothing reaches `main` until I merge it. While the PR
+is open, each run rebuilds the branch as current `main` plus one data commit, so the PR stays
+mergeable and its Vercel Preview shows exactly what would deploy, and comments with what was new
+that week. A week with no new data posts no comment (the branch is still rebuilt if `main` moved).
+The job type-checks and builds before it pushes.
+It needs Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests".
+
+- **The site's prose comes from GitHub.** My name, headline (the bio), location and summary are
+  read from my GitHub profile. The summary is the text marked in my profile README:
+  `<!-- portfolio:summary -->…<!-- /portfolio:summary -->` (GitHub hides the comments). The build
+  stops if one is missing, rather than show an old text.
+- **Problems with my own inputs do not block the rest.** An empty bio or a broken marker keeps the
+  previous value, the rest is still synced, and the run then fails so GitHub emails me.
 - Works without a token (60 API requests per hour; a run uses about 25). Set `GITHUB_TOKEN` for more.
-- Writes nothing at all when nothing changed, so the weekly job only commits real changes.
+- Writes nothing at all when nothing changed. The last push to this repo is ignored when comparing,
+  because the job's own push moves it.
 - **Refuses to write any file that looks like it contains a credential** and says which file and
   which kind, never the value (`scanForSecrets` in `lib/github/transform.ts`).
-- If Vercel does not deploy commits made by the Actions bot, create a Vercel Deploy Hook and store
-  its URL as the repository secret `VERCEL_DEPLOY_HOOK`; the workflow then triggers the deploy.
+
+## The résumé
+
+My résumé is a private Google Doc. Its exported PDF is in Google Drive, shared as "Anyone with the
+link: Viewer", and its share link is `resumePdf.url` in `content/config.ts`. The sync downloads the
+PDF, reads its text with pdf.js the way a résumé parser would (`lib/resume/pdf.ts`), reads the
+sections with `lib/resume/parse.ts` and writes `data/resume.json`. The site links the same PDF as
+"Download the PDF".
+
+The Doc follows the layout of my `gdoc-resume` skill (`references/conventions.md`), which keeps the
+PDF easy for applicant tracking systems to parse:
+
+- each section title is a line in capitals;
+- fields on a line are separated by `|`;
+- each role line ends with its dates, e.g. `Member of Technical Staff | Oct 2026 – Present`;
+- details are bullets.
+
+To update the résumé: edit the Doc, export it as PDF, and in Drive use Manage versions → Upload new
+version on the shared PDF. The link stays the same, and the next sync PR picks up the change. To
+check a PDF before uploading it, run `npm run sync -- --dry-run --resume-pdf FILE.pdf`.
+
+**Fallback:** the site uses the PDF only when its experience, education and skills all parse. While
+the PDF is not set, cannot be downloaded or is incomplete, the whole résumé (the `/resume` page,
+`resume.json`, `/experience` and the terminal) uses the `experience`, `education` and `skills`
+lists in `content/config.ts`. The site never mixes the two sources. The sync's summary, and the PR
+comment, say which source was used and why.
+
+Organisations already listed in `content/config.ts` keep their `/experience/<id>.md` address when
+they come from the PDF.
 
 ## Deploying
 
@@ -85,10 +125,10 @@ The canonical URL is set once in `lib/site.ts`.
 app/            routes: welcome, [...path] (every file), /resume, /vfs/*.json, robots.txt
 components/     workbench (title bar, explorer, tabs, status bar, panel), editor, terminal
 content/        config.ts and the hand-written project pages
-data/           generated by the sync: GitHub snapshot, READMEs, pinned excerpts
+data/           generated by the sync: GitHub snapshot, READMEs, pinned excerpts, résumé
 lib/vfs/        the builder and path logic        lib/terminal/  commands, completion, history
 lib/chain/      ABI, RPC, address checksums       scripts/       sync, preview
-.github/        CI, weekly sync, Dependabot
+.github/        CI, weekly sync
 ```
 
 ## Notes
@@ -96,5 +136,5 @@ lib/chain/      ABI, RPC, address checksums       scripts/       sync, preview
 - **No secrets, ever.** Nothing here needs a key. The chain features call public endpoints from the
   visitor's browser, and each was checked to allow cross-origin requests.
 - **Pinned on purpose:** TypeScript 6 (typescript-eslint does not support 7 yet) and ESLint 9
-  (plugins in `eslint-config-next` do not support 10 yet). Dependabot ignores those major versions.
+  (plugins in `eslint-config-next` do not support 10 yet). Do not bump either past that major version.
 - **Testnets only.** Every contract listed is on a test network and the site says so.

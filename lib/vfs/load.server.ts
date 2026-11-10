@@ -4,6 +4,8 @@ import * as config from "../../content/config";
 import { EMPTY_SNAPSHOT, SnapshotSchema, type Snapshot } from "../github/schema";
 import { buildVfs } from "./build";
 import { getBuildInfo } from "../build-info.server";
+import { resolveProfile, type SiteProfile } from "../profile";
+import { ResumeSchema, type ResumeSection } from "../resume/schema";
 import { buildContracts } from "../chain/contracts.server";
 import { buildTerminalData, type TerminalData } from "../terminal/data";
 import { pathKey } from "./paths";
@@ -24,10 +26,58 @@ export function loadSnapshot(): Snapshot {
   return SnapshotSchema.parse(JSON.parse(raw));
 }
 
+export interface ResumeData {
+  experience: config.ExperienceEntry[];
+  education: config.EducationEntry[];
+  skills: { group: string; items: string[] }[];
+  /** The PDF's other sections (projects, research...). Empty when the PDF is not used. */
+  sections: ResumeSection[];
+  /** True when the three lists above come from the résumé PDF, false when from content/config.ts. */
+  fromPdf: boolean;
+  /** The public résumé PDF, when the sync could read it. */
+  pdfUrl: string | null;
+}
+
+let cachedResume: ResumeData | undefined;
+
+/**
+ * The résumé as the site shows it. The PDF's data (data/resume.json, written by the sync) is used only
+ * when its experience, education and skills all parsed; otherwise all three come from
+ * content/config.ts, so the site never mixes a half-finished résumé with the fallback.
+ */
+export function getResume(): ResumeData {
+  if (cachedResume) return cachedResume;
+  const raw = read("data/resume.json");
+  const parsed = raw === null ? null : ResumeSchema.safeParse(JSON.parse(raw));
+  if (parsed && !parsed.success) console.warn(`data/resume.json is not valid, so the résumé uses content/config.ts: ${parsed.error.message}`);
+  const pdf = parsed?.success ? parsed.data : null;
+  const fallback = { experience: config.experience, education: config.education, skills: config.skills, sections: [], fromPdf: false };
+  if (pdf?.experience && pdf.education && pdf.skills) {
+    cachedResume = { experience: pdf.experience, education: pdf.education, skills: pdf.skills, sections: pdf.sections, fromPdf: true, pdfUrl: pdf.pdfUrl };
+  } else {
+    cachedResume = { ...fallback, pdfUrl: pdf?.pdfUrl ?? null };
+  }
+  return cachedResume;
+}
+
+let cachedProfile: SiteProfile | undefined;
+
+/** content/config.ts joined with my GitHub profile. Throws, naming the field, when GitHub lacks one. */
+export function getProfile(): SiteProfile {
+  const resumeUrl = getResume().pdfUrl ?? config.profile.resumeUrl;
+  cachedProfile ??= resolveProfile({ ...config.profile, resumeUrl }, loadSnapshot().profile);
+  return cachedProfile;
+}
+
 let cached: VfsDir | undefined;
 
 export function getVfs(): VfsDir {
-  cached ??= buildVfs({ config, snapshot: loadSnapshot(), read });
+  const { experience, education, skills, sections } = getResume();
+  cached ??= buildVfs({
+    config: { ...config, profile: getProfile(), experience, education, skills, resumeSections: sections },
+    snapshot: loadSnapshot(),
+    read,
+  });
   return cached;
 }
 
@@ -43,21 +93,11 @@ export function explorerTree(): ExplorerNode[] {
 export function getTerminalData(): TerminalData {
   return buildTerminalData({
     system: config.system,
-    profile: {
-      name: config.profile.name,
-      handle: config.profile.handle,
-      headline: config.profile.headline,
-      summary: config.profile.summary,
-      location: config.profile.location,
-      email: config.profile.email,
-      github: config.profile.github,
-      linkedin: config.profile.linkedin,
-      resumeUrl: config.profile.resumeUrl,
-    },
+    profile: getProfile(),
     build: getBuildInfo(),
-    experience: config.experience,
-    education: config.education,
-    skills: config.skills,
+    experience: getResume().experience,
+    education: getResume().education,
+    skills: getResume().skills,
     projects: config.projects,
     excludedRepos: config.excludedRepos,
     contracts: buildContracts(config.projects),

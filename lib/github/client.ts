@@ -28,7 +28,7 @@ export function createClient(options: { token?: string; fetchImpl?: typeof fetch
 
   const headers: Record<string, string> = {
     accept: "application/vnd.github+json",
-    "user-agent": "portfolio-yogesh0509-sync",
+    "user-agent": "yogesh0509-portfolio-sync",
     "x-github-api-version": "2022-11-28",
   };
   if (options.token) headers.authorization = `Bearer ${options.token}`;

@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import { Ubuntu_Sans, Ubuntu_Sans_Mono } from "next/font/google";
 import "./globals.css";
 
-import { profile, projects, system } from "@/content/config";
+import { projects, system } from "@/content/config";
 import Workbench from "@/components/workbench/Workbench";
 import { WorkbenchProvider } from "@/components/workbench/WorkbenchProvider";
 import { getBuildInfo } from "@/lib/build-info.server";
 import { buildPorts } from "@/lib/ports";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { explorerTree, loadSnapshot } from "@/lib/vfs/load.server";
+import { explorerTree, getProfile, loadSnapshot } from "@/lib/vfs/load.server";
+
+const profile = getProfile();
 
 const sans = Ubuntu_Sans({ subsets: ["latin"], variable: "--font-ubuntu-sans", display: "swap" });
 const mono = Ubuntu_Sans_Mono({ subsets: ["latin"], variable: "--font-ubuntu-mono", display: "swap" });

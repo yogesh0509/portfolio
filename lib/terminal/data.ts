@@ -1,6 +1,7 @@
 import type { EducationEntry, ExperienceEntry, FeaturedProject } from "../../content/config";
 import type { TerminalContract } from "../chain/types";
 import type { PullRequest, Snapshot } from "../github/schema";
+import type { SiteProfile } from "../profile";
 
 /**
  * Everything the terminal's commands read, as plain data. Built once at build time
@@ -89,7 +90,7 @@ export interface TerminalSystem {
 
 export interface TerminalData {
   system: TerminalSystem;
-  profile: { name: string; handle: string; headline: string; summary: string; location: string; email: string; github: string; linkedin: string; resumeUrl: string };
+  profile: SiteProfile;
   build: { branch: string; commit: string; repoUrl: string };
   syncedAt: string | null;
   experience: ExperienceEntry[];
