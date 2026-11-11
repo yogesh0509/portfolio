@@ -41,6 +41,7 @@ export function chipsFor(session: Session, env: Env): string[] {
   if (dir?.children?.some((c) => c.name === "README.md")) chips.push("cat README.md");
   chips.push("ls");
   if (project) chips.push(project.live || project.local ? "run" : "gh repo view");
+  if (env.data.videos.some((v) => v.dir === session.cwd)) chips.push("watch");
   chips.push("cd ..", "help");
   return chips;
 }

@@ -27,7 +27,7 @@
     },
     {
       "source": "/Projects/TakeYourQuiz.js",
-      "destination": "/archive/takeyourquiz/README.md",
+      "destination": "/projects/takeyourquiz/README.md",
       "permanent": false
     },
     {
@@ -52,7 +52,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://mempool.space https://ethereum-rpc.publicnode.com https://starknet-rpc.publicnode.com https://ethereum-sepolia-rpc.publicnode.com https://starknet-sepolia-rpc.publicnode.com https://sepolia.base.org https://api.avax-test.network https://rpc.mordor.etccooperative.org; frame-src 'none'; media-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://mempool.space https://ethereum-rpc.publicnode.com https://starknet-rpc.publicnode.com https://ethereum-sepolia-rpc.publicnode.com https://starknet-sepolia-rpc.publicnode.com https://sepolia.base.org https://api.avax-test.network https://rpc.mordor.etccooperative.org; frame-src https://www.youtube-nocookie.com https://www.loom.com; media-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         },
         {
           "key": "X-Content-Type-Options",

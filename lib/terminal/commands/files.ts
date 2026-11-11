@@ -188,8 +188,9 @@ const open: Command = {
     let node = lookup(env.tree, absolute(session.cwd, typed));
     if (!node) {
       // `open haystack` works from anywhere, like the project names elsewhere.
-      const project = env.data.projects.find((p) => p.slug.toLowerCase() === typed.toLowerCase());
-      if (project) node = lookup(env.tree, project.path);
+      const wanted = typed.toLowerCase();
+      const target = env.data.projects.find((p) => p.slug.toLowerCase() === wanted) ?? env.data.research.find((r) => r.slug.toLowerCase() === wanted);
+      if (target) node = lookup(env.tree, target.path);
     }
     if (!node) return fail(`open: ${typed}: No such file or directory`, didYouMean(env, absolute(session.cwd, typed)));
     if (node.kind === "dir") {

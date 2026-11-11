@@ -2,7 +2,9 @@
 
 My portfolio, built to look like VS Code connected to a WSL Ubuntu machine, because it shows code
 first and decoration second. Projects are files in the language they are written in, the terminal
-runs real commands against my real data, and every number on the site traces back to GitHub.
+is a simulation that reads my real data, and the GitHub numbers (repositories, pull requests, languages,
+last push) come from a weekly snapshot of my GitHub account. The résumé comes from a PDF, and the Ubuntu
+version and kernel that `neofetch` prints are typed into `content/config.ts`.
 
 It is a fully static site (`output: "export"`), deployed on Vercel.
 
@@ -44,8 +46,9 @@ data/ (GitHub snapshot) ┘   (pure function)     file system ├─> terminal: 
 
 ## Add or change a project
 
-1. Add an entry to `projects` in `content/config.ts` (slug, title, one-sentence tagline, repo,
-   stack, period). Optional: `live`, `local`, `contracts`, `excerpts`.
+1. Add an entry to `projects` in `content/config.ts` (slug, folder, title, one-sentence tagline,
+   repo, stack, period). Optional: `live`, `local`, `contracts`, `excerpts`. An entry in the
+   `hackathons` folder also lists its events in `hackathons`, with the result when it placed.
 2. Write the page body in `content/projects/<slug>.md`. The facts table, the deployed-contracts
    table and the merged pull requests are generated.
 3. For an excerpt, give the repo, path, **full commit SHA** and line range. Use a commit that is on
@@ -54,6 +57,14 @@ data/ (GitHub snapshot) ┘   (pure function)     file system ├─> terminal: 
 4. Run `npm run sync`. It fetches every excerpt and fails if a SHA or line range does not exist.
 
 EVM contract addresses must be EIP-55 checksummed or the build fails: a typo is caught, not shown.
+
+A research paper is an entry in `research` in `content/config.ts` with its body in
+`content/research/<slug>.md`; it appears under `/research`. A video is an entry in `videos`: a folder,
+an https YouTube or Loom link, a title and its length. It becomes a `.mp4` file in that folder that
+plays in the editor, is shown under the folder's README, and opens from the terminal with
+`watch <folder>`. The player loads from YouTube or Loom only after a click. The build fails if the
+folder does not exist, the link is not YouTube or Loom, or the provider is missing from `frame-src` in
+`vercel.json`.
 
 ## The GitHub sync
 
@@ -102,8 +113,10 @@ check a PDF before uploading it, run `npm run sync -- --dry-run --resume-pdf FIL
 **Fallback:** the site uses the PDF only when its experience, education and skills all parse. While
 the PDF is not set, cannot be downloaded or is incomplete, the whole résumé (the `/resume` page,
 `resume.json`, `/experience` and the terminal) uses the `experience`, `education` and `skills`
-lists in `content/config.ts`. The site never mixes the two sources. The sync's summary, and the PR
-comment, say which source was used and why.
+lists in `content/config.ts`. A complete PDF is never mixed with the fallback lists, with one exception:
+an `experience` entry marked `keepWithPdf` stays in the experience list when the PDF does not list it
+(today the Google Summer of Code internship, which the PDF files under "Open source"). The sync's
+summary, and the PR comment, say which source was used and why.
 
 Organisations already listed in `content/config.ts` keep their `/experience/<id>.md` address when
 they come from the PDF.

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import PrintButton from "@/components/editor/PrintButton";
+import { VscFilePdf } from "react-icons/vsc";
 import { projects } from "@/content/config";
 import { safeHref } from "@/lib/safe-url";
 import { formatMonth } from "@/lib/vfs/build";
@@ -26,9 +26,14 @@ export default function ResumePage() {
   return (
     <article id="resume-print" className="resume mx-auto max-w-3xl px-6 py-8 leading-relaxed">
       <div className="mb-6 flex flex-wrap items-center gap-3 print:hidden">
-        <PrintButton />
         {profile.resumeUrl && (
-          <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-2">
+          <a
+            href={profile.resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-sm border border-[#454545] px-3 py-1 text-sm hover:bg-[#2a2d2e]"
+          >
+            <VscFilePdf aria-hidden />
             Download the PDF
           </a>
         )}

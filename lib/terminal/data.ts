@@ -1,7 +1,9 @@
-import type { EducationEntry, ExperienceEntry, FeaturedProject } from "../../content/config";
+import type { EducationEntry, ExperienceEntry, FeaturedProject, HackathonEntry, ResearchEntry, VideoSpec } from "../../content/config";
 import type { TerminalContract } from "../chain/types";
 import type { PullRequest, Snapshot } from "../github/schema";
 import type { SiteProfile } from "../profile";
+import { isSiteRepo } from "../site";
+import { parseVideoUrl, videoPath, watchUrl, type VideoProvider } from "../video";
 
 /**
  * Everything the terminal's commands read, as plain data. Built once at build time
@@ -10,7 +12,8 @@ import type { SiteProfile } from "../profile";
 
 export interface TerminalProject {
   slug: string;
-  folder: "projects" | "open-source";
+  folder: FeaturedProject["folder"];
+  hackathons: HackathonEntry[];
   /** VFS directory, e.g. /projects/haystack. */
   path: string;
   title: string;
@@ -27,6 +30,32 @@ export interface TerminalProject {
   local?: { port: number; command: string };
   /** Repository description from GitHub, if any. */
   description: string | null;
+}
+
+export interface TerminalResearch {
+  slug: string;
+  /** VFS directory, e.g. /research/djed-shu. */
+  path: string;
+  title: string;
+  tagline: string;
+  authors: string[];
+  status: string;
+}
+
+/** A video the `watch` command can open: the `.mp4` file in the editor and the provider's own page. */
+export interface TerminalVideo {
+  /** The folder's name, which `watch` takes: "haystack", "djed-shu". */
+  name: string;
+  /** The folder it belongs to, e.g. /hackathons/haystack. */
+  dir: string;
+  /** The `.mp4` file's VFS path, which is also its page URL. */
+  path: string;
+  title: string;
+  provider: VideoProvider;
+  seconds?: number;
+  by?: string;
+  /** Where to watch it on the provider's own site. */
+  watchUrl: string;
 }
 
 export interface RepoSummary {
@@ -97,6 +126,8 @@ export interface TerminalData {
   education: EducationEntry[];
   skills: { group: string; items: string[] }[];
   projects: TerminalProject[];
+  research: TerminalResearch[];
+  videos: TerminalVideo[];
   repos: RepoSummary[];
   pullRequests: PullRequest[];
   languages: LanguageStat[];
@@ -114,6 +145,8 @@ export interface TerminalDataInput {
   education: EducationEntry[];
   skills: TerminalData["skills"];
   projects: FeaturedProject[];
+  research: ResearchEntry[];
+  videos: VideoSpec[];
   excludedRepos: string[];
   contracts: TerminalContract[];
   snapshot: Snapshot;
@@ -136,6 +169,7 @@ export function buildTerminalData(input: TerminalDataInput): TerminalData {
     return {
       slug: p.slug,
       folder: p.folder,
+      hackathons: p.hackathons ?? [],
       path: `/${p.folder}/${p.slug}`,
       title: p.title,
       tagline: p.tagline,
@@ -151,6 +185,23 @@ export function buildTerminalData(input: TerminalDataInput): TerminalData {
       description: repo?.description ?? null,
     };
   });
+
+  const research: TerminalResearch[] = input.research.map((r) => ({
+    slug: r.slug,
+    path: `/research/${r.slug}`,
+    title: r.title,
+    tagline: r.tagline,
+    authors: r.authors,
+    status: r.status,
+  }));
+
+  const videos: TerminalVideo[] = input.videos.map((v) => {
+    const ref = parseVideoUrl(v.url);
+    return { name: v.dir.slice(v.dir.lastIndexOf("/") + 1), dir: v.dir, path: videoPath(v), title: v.title, provider: ref.provider, seconds: v.seconds, by: v.by, watchUrl: watchUrl(ref) };
+  });
+  const names = videos.map((v) => v.name);
+  const repeated = names.find((n, i) => names.indexOf(n) !== i);
+  if (repeated) throw new Error(`videos: two videos live in folders named "${repeated}", so \`watch ${repeated}\` would be ambiguous`);
 
   // Languages across every public repo I own (forks are other people's code), counted by repository.
   const byLang = new Map<string, { repos: string[]; lastPush: string }>();
@@ -179,7 +230,8 @@ export function buildTerminalData(input: TerminalDataInput): TerminalData {
     timeline.push({ date: String(e.from), sortKey: sortKeyOf(String(e.from)), kind: "education", text: `started at ${e.school}` });
     timeline.push({ date: String(e.to), sortKey: sortKeyOf(String(e.to)), kind: "education", text: `completed ${e.degree} at ${e.school}` });
   }
-  for (const project of projects.filter((p) => p.folder === "projects")) {
+  // Only repos I own are in the snapshot, so team hackathon repos drop out here on their own.
+  for (const project of projects.filter((p) => p.folder !== "open-source")) {
     const repo = snapshot.repos.find((r) => r.fullName.toLowerCase() === project.repo.toLowerCase());
     if (repo) timeline.push({ date: repo.createdAt.slice(0, 10), sortKey: sortKeyOf(repo.createdAt.slice(0, 10)), kind: "project", text: `started ${project.title}`, repo: repo.fullName, url: repo.htmlUrl });
   }
@@ -188,7 +240,7 @@ export function buildTerminalData(input: TerminalDataInput): TerminalData {
   }
   timeline.sort((a, b) => b.sortKey.localeCompare(a.sortKey) || a.text.localeCompare(b.text));
 
-  const shown = own.filter((r) => !r.archived && !excluded.has(r.name.toLowerCase()));
+  const shown = own.filter((r) => !r.archived && !excluded.has(r.name.toLowerCase()) && !isSiteRepo(r.fullName));
   const lastPush = shown.reduce<string | null>((latest, r) => (latest === null || r.pushedAt > latest ? r.pushedAt : latest), null);
 
   return {
@@ -200,6 +252,8 @@ export function buildTerminalData(input: TerminalDataInput): TerminalData {
     education: input.education,
     skills: input.skills,
     projects,
+    research,
+    videos,
     repos: own.map((r) => ({
       name: r.name,
       fullName: r.fullName,

@@ -1,0 +1,25 @@
+## What it is
+
+This is the site you are reading. It is laid out like VS Code connected to a WSL Ubuntu machine (WSL is Windows Subsystem for Linux, a way to run Linux on Windows): an explorer on the left, editor tabs, Quick Open on Ctrl+P (the résumé page leaves Ctrl+P to the browser, so it prints), a bottom panel with a TERMINAL and a PORTS tab, and a status bar. Each project is a Markdown file with its code excerpts beside it. I laid it out this way so the site shows code first and decoration second.
+
+## How it works
+
+- **A static export.** `next.config.ts` sets `output: "export"`, so `next build` writes plain HTML files. The site is deployed on Vercel.
+- **One virtual file system.** `buildVfs` in `lib/vfs/build.ts` builds an in-memory tree of files from `content/config.ts` (the list of featured projects, testnet contracts and code excerpts), the Markdown bodies in `content/projects/` and the GitHub data saved in `data/`. The explorer, every page, Quick Open and the terminal read that one tree, so they cannot disagree about which files exist. An address that is not in the tree is a real 404.
+- **A weekly sync.** A GitHub Actions workflow, `.github/workflows/sync-github.yml`, is scheduled for Mondays at 03:17 UTC and can be started by hand. It runs `npm run sync`, which refreshes `data/`: my profile, my repositories, the pull requests I had merged into other projects, the status of live demos, copies of READMEs for the archive folder and the pinned code excerpts. When the data changed, it checks and builds the site, then opens or updates one pull request. Nothing reaches `main` until I merge it. As of 11 November 2026 that pull-request version has not run: it was added on 10 November, and the three Mondays before it pushed straight to `main`.
+- **Profile and résumé.** My name, headline and location come from my GitHub profile. The summary is the text between two HTML comments in my profile README (the excerpt reads it). My résumé is a Google Doc exported to PDF and shared by link. The sync reads the PDF's text with pdf.js, Mozilla's PDF reader, and `lib/resume/parse.ts` turns its sections into data. The site uses the PDF's data only when experience, education and skills all parse, and otherwise uses the lists in `content/config.ts`. One entry, the Google Summer of Code internship, is marked to stay in the experience list because the PDF files it under "Open source".
+- **Pinned excerpts.** Each excerpt in the config names a repository, a file, a full commit SHA (the 40-character ID of one commit) and a line range. The sync downloads the file at that commit, fails if the file or lines do not exist, and warns if the file has changed since. It also refuses to write any file that matches one of its credential patterns, and stops the whole run when one does. It ignores placeholder-looking values and passwords in `localhost` URLs on purpose, so it is a safety net, not a guarantee.
+- **Contracts read live.** `cast call` in the terminal sends a read-only `eth_call` (a JSON-RPC request that reads a contract without sending a transaction) from the visitor's browser to a public endpoint. It runs only the functions listed in the config. The build fails on an EVM address that is not in checksum form, which catches typos.
+- **Highlighting at build time.** Shiki, a highlighter that uses VS Code's own grammars, colours the code while the site is built. The library is not sent to the browser, only the coloured HTML.
+
+## What is simulated
+
+The terminal is not a shell. `ls`, `cd`, `cat` and `tree` walk the same virtual files the editor shows. The Ubuntu version and kernel that `neofetch` prints are typed into `content/config.ts`. `git log` prints a timeline of roles, education, project starts and merged pull requests, not this repository's commits. Commands that would change files answer "Read-only file system". `run <project>` prints a live demo's link and its status at the last sync, or the command that starts a project locally.
+
+## Status
+
+- It is live at www.yogesh0509.info. The 2024 version was a different design. The current structure arrived in one pull request, number 7, merged on 21 October 2026.
+- There are no automated tests. CI runs the type checker, a production build and the linter on every push to `main` and every pull request. The build fails on a mistyped contract address, a missing profile field, a duplicate file name, or a Content-Security-Policy (a browser rule limiting which addresses a page may contact) that does not list a chain endpoint.
+- The repository has no analytics code and sets no cookies. On screens at least 1,024 pixels wide, the status bar asks three public blockchain endpoints for the latest block number every minute while the tab is visible, so those providers see the visitor's IP address. Videos load from YouTube or Loom only after you press play.
+- The data is a weekly snapshot. A new repository or pull request appears after the next Monday run and my merge. The résumé depends on one Drive link and one PDF layout.
+- The Content-Security-Policy still allows inline scripts and styles (`'unsafe-inline'`).

@@ -201,6 +201,15 @@ export function scanForSecrets(text: string): string[] {
   return found;
 }
 
+/**
+ * Replaces the password in every `scheme://user:password@host` URL with `<password>`. Archive pages copy
+ * other repos' READMEs, and a setup example such as `postgresql://postgres:admin@localhost/db` is harmless
+ * but looks like a leaked credential to anyone who greps the repository.
+ */
+export function redactUrlPasswords(text: string): string {
+  return text.replace(/(\b[a-z][a-z0-9+.-]*:\/\/[^\s:@/]+):[^\s@/]+@/gi, "$1:<password>@");
+}
+
 const byNewest = (a: string, b: string) => b.localeCompare(a);
 
 /** One fixed order, so identical data always serialises identically. */

@@ -36,6 +36,7 @@ export function describeFile(file: Pick<VfsFile, "name" | "lang" | "content" | "
     }
     return `${file.name} on yogesh0509`;
   }
+  if (file.lang === "video") return `Video: ${file.content.split("\n")[0]}`;
   if (file.name === "resume.json") return "Résumé in JSON Resume format: experience, education, skills and links.";
   const source = /^(?:\/\/|#)\s*Source:\s+github\.com\/(\S+)/m.exec(file.content)?.[1];
   return source ? `Code excerpt from ${source}, pinned to a commit.` : `${file.name} on yogesh0509`;

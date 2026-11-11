@@ -1,3 +1,4 @@
+import { isSiteRepo } from "../../site";
 import { closest } from "../suggest";
 import { blank, bold, cmd, error, plain } from "../text";
 import type { Command, Env, Line, Result } from "../types";
@@ -76,7 +77,7 @@ const apt: Command = {
     if (sub === "list") {
       if (rest.includes("--upgradable")) {
         const cutoff = env.now().getTime() - 30 * 24 * 60 * 60 * 1000;
-        const recent = data.repos.filter((r) => r.listed && Date.parse(r.pushedAt) >= cutoff).sort((a, b) => b.pushedAt.localeCompare(a.pushedAt));
+        const recent = data.repos.filter((r) => r.listed && !isSiteRepo(r.fullName) && Date.parse(r.pushedAt) >= cutoff).sort((a, b) => b.pushedAt.localeCompare(a.pushedAt));
         return ok([
           plain("Listing... Done"),
           ...recent.map((r): Line => [cmd(r.name, `gh repo view ${r.name}`), { text: `/github ${versionOf(r.pushedAt)} all [upgradable from: ${versionOf(r.createdAt)}]` }]),

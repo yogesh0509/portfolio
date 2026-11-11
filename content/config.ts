@@ -7,6 +7,7 @@
  */
 
 import type { NetworkId } from "../lib/chain/networks";
+import { SITE_REPO } from "../lib/site";
 
 /** A read-only function the terminal's `cast call` may run against a deployed contract. */
 export interface ContractCall {
@@ -49,13 +50,30 @@ export interface Stack {
   frameworks: string[];
 }
 
+/** One hackathon a project was submitted to. */
+export interface HackathonEntry {
+  /** The event, and the track when there was one. */
+  event: string;
+  /** "Winner" or the prize name. Omit when it did not place. */
+  result?: string;
+  /** The public submission page (Devpost and the like), if one exists. */
+  url?: string;
+}
+
 export interface FeaturedProject {
-  /** Folder name under /projects or /open-source. Lower case, no spaces. */
+  /** Folder name under /projects, /open-source or /hackathons. Lower case, no spaces. */
   slug: string;
-  folder: "projects" | "open-source";
+  folder: "projects" | "open-source" | "hackathons";
+  /** Where it was submitted. Set it for every entry in the "hackathons" folder. */
+  hackathons?: HackathonEntry[];
   title: string;
   /** One sentence, used on the welcome page, in `ls` and as the legacy `info` text. */
   tagline: string;
+  /**
+   * Set to false to leave the project out of the "Featured" list on the welcome README. The project
+   * page, explorer entry, Quick Open and terminal still include it. Defaults to true.
+   */
+  featured?: boolean;
   /** Primary repository, owner/name. Key into the GitHub snapshot. */
   repo: string;
   /** Other repositories whose merged pull requests belong to this entry. */
@@ -70,6 +88,42 @@ export interface FeaturedProject {
   /** Testnet deployments, listed on the project page and readable with `cast call`. */
   contracts?: DeployedContract[];
   excerpts: ExcerptSpec[];
+}
+
+/**
+ * A research paper. Its page is content/research/<slug>.md, shown under /research/<slug>/README.md
+ * with a facts list built from the fields below.
+ */
+export interface ResearchEntry {
+  slug: string;
+  title: string;
+  /** One sentence, used on the welcome page, in `ls` and in `man yogesh`. */
+  tagline: string;
+  /** As printed on the paper, in order. Mine is included. */
+  authors: string[];
+  /** "2025 to 2026". */
+  period: string;
+  /** Where the paper stands: which version is out and what comes next. */
+  status: string;
+  /** Extra lines of the facts list: a label and Markdown for its value (links, dates). */
+  facts: { label: string; value: string }[];
+  /** Folder of the open-source or project page this paper's code lives in, e.g. "/open-source/djed-solidity". */
+  relatedProject?: string;
+}
+
+/** A video shown in the editor as a file you can play, and by the terminal's `watch` command. */
+export interface VideoSpec {
+  /** Folder the video belongs to, e.g. "/hackathons/haystack". It must exist, or the build fails. */
+  dir: string;
+  /** An https YouTube or Loom address (lib/video.ts reads it; anything else fails the build). */
+  url: string;
+  title: string;
+  /** Length in seconds, from the provider. */
+  seconds?: number;
+  /** Channel or author when it is not me. */
+  by?: string;
+  /** File name in the folder. It must end in ".mp4" so the editor treats it as a video. Defaults to "demo.mp4". */
+  file?: string;
 }
 
 export interface Role {
@@ -89,6 +143,12 @@ export interface ExperienceEntry {
   /** The "Tech stack:" line of the résumé entry, when the résumé Doc has one. */
   stack?: string[];
   bullets: string[];
+  /**
+   * Keep this entry in the experience list even when the résumé PDF is the source and does not list it as a
+   * job (my PDF files Google Summer of Code under "Open source"). It is dropped when the PDF has an entry with
+   * the same id, so moving it into the Doc's EXPERIENCE section later does not show it twice.
+   */
+  keepWithPdf?: boolean;
 }
 
 export interface EducationEntry {
@@ -172,8 +232,11 @@ export const experience: ExperienceEntry[] = [
       { title: "Associate Member of Technical Staff", from: "2025-07", to: "2026-09" },
       { title: "Product Engineering Intern", from: "2025-01", to: "2025-06" },
     ],
-    // TODO(yogesh): the LinkedIn export has no description of this work. Add bullets here.
-    bullets: [],
+    stack: ["Java", "Spring Boot", "Perl", "TypeScript", "React", "Node.js", "AWS", "Docker", "Jenkins", "Terraform"],
+    bullets: [
+      "Engineered a Java/Spring Boot pipeline that decouples CMS quality reporting from a legacy Perl/Oracle monolith, extracting enrollment and measure results from Snowflake and publishing Kafka change events to scoring services.",
+      "Led multi-region DR (us-west-2 failover) for 5+ production services via Terraform; drove SonarQube hardening.",
+    ],
   },
   {
     id: "hashstack",
@@ -193,12 +256,21 @@ export const experience: ExperienceEntry[] = [
     org: "Google Summer of Code, with AOSSIE and the Djed Alliance",
     place: "Remote",
     roles: [{ title: "Blockchain Intern", from: "2024-05", to: "2024-09" }],
+    keepWithPdf: true,
     bullets: [
       "Developed, tested and deployed an oracle adapter for Djed, a crypto-backed algorithmic stablecoin on EVM-based networks.",
       "Worked on Djed Shu: built a converter that adapts one-price oracles to two-price oracles by tracking the maximum and minimum prices over 24 hours.",
     ],
   },
 ];
+
+/**
+ * Experience entries that point to a project page, by experience id. Applied whether the entry comes from
+ * the résumé PDF or from this file. The value is the project's folder, e.g. "/open-source/djed-solidity".
+ */
+export const experienceLinks: Record<string, string> = {
+  "gsoc-aossie": "/open-source/djed-solidity",
+};
 
 export const education: EducationEntry[] = [
   {
@@ -216,7 +288,7 @@ export const skills: { group: string; items: string[] }[] = [
   { group: "Backend and infrastructure", items: ["Node.js", "PostgreSQL", "Prisma", "Docker", "AWS", "GitHub Actions"] },
 ];
 
-/** Listed in this order in the explorer: open source first, then my own projects. */
+/** Listed in this order in the explorer: open source first, then my own projects, then hackathons. */
 export const projects: FeaturedProject[] = [
   {
     slug: "djed-solidity",
@@ -273,6 +345,7 @@ export const projects: FeaturedProject[] = [
   {
     slug: "zeroxbridge",
     folder: "open-source",
+    featured: false,
     title: "ZeroXBridge",
     tagline:
       "Deployment tooling for the L1 (Solidity) and L2 (Cairo) contracts, MMR index fixes in the Cairo bridge contract, and a Starknet burn-event fetcher in the Rust sequencer.",
@@ -348,6 +421,7 @@ export const projects: FeaturedProject[] = [
   {
     slug: "zkvm-benchmarks",
     folder: "open-source",
+    featured: false,
     title: "zkVM benchmarks",
     tagline: "Added the RISC Zero programs (Fibonacci, SHA-256, Poseidon hash) to babybear-labs' benchmark of zkVMs and proving schemes.",
     repo: "babybear-labs/benchmark",
@@ -366,29 +440,49 @@ export const projects: FeaturedProject[] = [
     ],
   },
   {
-    slug: "haystack",
-    folder: "projects",
-    title: "Haystack",
+    slug: "trustless-work",
+    folder: "open-source",
+    featured: false,
+    title: "Trustless Work",
     tagline:
-      "Private Electrum sync for Bitcoin light wallets: each real address hides among decoys, and an attacker module scores the privacy in bits.",
-    repo: "yogesh0509/Haystack",
-    period: "2026",
-    stack: { languages: ["Rust", "Python"], frameworks: ["bdk_electrum", "Docker"] },
-    local: { port: 7878, command: "docker run -it --rm -p 127.0.0.1:7878:7878 -v haystack-out:/haystack/out haystack" },
+      "A spike for Trustless Work, an escrow platform on Stellar: an elizaOS plugin that signs a Stellar transaction pasted into a chat.",
+    repo: "Trustless-Work/trustlesswork-spikes",
+    period: "February to March 2025",
+    role: "Contributor",
+    stack: { languages: ["TypeScript"], frameworks: ["elizaOS", "Stellar SDK"] },
     excerpts: [
       {
-        // Keyed decoy derivation: same-type decoys from an HMAC, so every sync sends the same ones.
-        repo: "yogesh0509/Haystack",
-        path: "haystack-electrum/src/decoy.rs",
-        ref: "c745fe6457b4bc42bb8004f76d5ee0c2576d693a",
-        lines: [1, 77],
+        // The signing method: reads the secret key through the settings check, picks the network
+        // passphrase, decodes the XDR string, signs it and encodes it again.
+        repo: "Trustless-Work/trustlesswork-spikes",
+        path: "eliza-plugin-stellar/src/plugins/plugin-stellar/actions/index.ts",
+        ref: "1a0f7821ee0c0cf4227e35df3df83a09435fac2b",
+        lines: [53, 88],
+        name: "signTransaction.ts",
       },
+    ],
+  },
+  {
+    slug: "jarvis",
+    folder: "projects",
+    featured: false,
+    title: "Jarvis",
+    tagline:
+      "An offline voice assistant for Windows: a wake word or push-to-talk starts a command, and a local embedding matcher, or a grammar-constrained local LLM when the matcher is unsure, picks one of 25 allowlisted desktop actions.",
+    repo: "yogesh0509/jarvis",
+    period: "2026",
+    stack: {
+      languages: ["Python", "PowerShell"],
+      frameworks: ["faster-whisper", "openWakeWord", "llama-cpp-python", "Piper TTS", "WebRTC AEC3"],
+    },
+    excerpts: [
       {
-        // The attacker's score: how many of its top guesses are real, in bits.
-        repo: "yogesh0509/Haystack",
-        path: "attack/scoring.py",
-        ref: "c745fe6457b4bc42bb8004f76d5ee0c2576d693a",
-        lines: [73, 137],
+        // Every action, app and direction the local LLM returns is re-checked against the real lists,
+        // and each action must carry its own parameter; the grammar is never the only check.
+        repo: "yogesh0509/jarvis",
+        path: "llm_intent.py",
+        ref: "604eebd0816b456b5e47700e17dcbc49d58b7aec",
+        lines: [291, 339],
       },
     ],
   },
@@ -504,12 +598,207 @@ export const projects: FeaturedProject[] = [
       },
     ],
   },
+  {
+    slug: "takeyourquiz",
+    folder: "projects",
+    title: "TakeYourQuiz",
+    tagline:
+      "A self-testing quiz site: upload a PDF of multiple-choice questions, enter the answer key, then answer A to D against a per-question timer beside an embedded PDF viewer.",
+    repo: "yogesh0509/TakeYourQuiz",
+    period: "2022",
+    stack: { languages: ["JavaScript", "Pug"], frameworks: ["Express", "MongoDB (Mongoose)", "AWS S3", "Adobe PDF Embed API"] },
+    live: "https://takeyourquiz.onrender.com",
+    // No excerpt on purpose: the candidate functions depend on page-level globals and carry
+    // known bugs (see the Status section of the page).
+    excerpts: [],
+  },
+  {
+    slug: "portfolio",
+    folder: "projects",
+    featured: false,
+    title: "Portfolio site",
+    tagline:
+      "This site: a static Next.js page laid out like VS Code, with an explorer, Quick Open and a terminal, all built from one config file and a weekly snapshot of my GitHub data.",
+    repo: SITE_REPO,
+    period: "2024 to 2026",
+    stack: {
+      languages: ["TypeScript"],
+      frameworks: ["Next.js", "React", "Tailwind CSS", "Shiki", "pdf.js", "GitHub Actions"],
+    },
+    excerpts: [
+      {
+        // Reads the site's summary from my GitHub profile README: the text between two HTML comments,
+        // reduced to plain words, and kept between 20 and 400 characters.
+        repo: SITE_REPO,
+        path: "lib/github/summary.ts",
+        ref: "60d58d8052f4942370de0b798694118ced20fd5e",
+        lines: [1, 39],
+      },
+    ],
+  },
+  {
+    slug: "haystack",
+    folder: "hackathons",
+    title: "Haystack",
+    tagline:
+      "Private Electrum sync for Bitcoin light wallets: each real address hides among decoys, and an attacker module scores the privacy in bits.",
+    repo: "yogesh0509/Haystack",
+    period: "2026",
+    hackathons: [{ event: "BOSS Battle, Cypherpunk track (Private Electrum Sync problem statement)", result: "Winner" }],
+    stack: { languages: ["Rust", "Python"], frameworks: ["bdk_electrum", "Docker"] },
+    local: { port: 7878, command: "docker run -it --rm -p 127.0.0.1:7878:7878 -v haystack-out:/haystack/out haystack" },
+    excerpts: [
+      {
+        // Keyed decoy derivation: same-type decoys from an HMAC, so every sync sends the same ones.
+        repo: "yogesh0509/Haystack",
+        path: "haystack-electrum/src/decoy.rs",
+        ref: "c745fe6457b4bc42bb8004f76d5ee0c2576d693a",
+        lines: [1, 77],
+      },
+      {
+        // The attacker's score: how many of its top guesses are real, in bits.
+        repo: "yogesh0509/Haystack",
+        path: "attack/scoring.py",
+        ref: "c745fe6457b4bc42bb8004f76d5ee0c2576d693a",
+        lines: [73, 137],
+      },
+    ],
+  },
+  {
+    slug: "owl-finance",
+    folder: "hackathons",
+    title: "Owl Finance",
+    tagline:
+      "Undercollateralized lending on Solana: a Rust service scores a borrower from zkTLS-verified Binance account data and records the score in an Anchor program.",
+    repo: "Lumaen-Labs/leverage-scoring",
+    period: "October 2025",
+    role: "Scoring service, credit-score instruction and protocol docs, in team Lumaen Labs",
+    hackathons: [{ event: "Colosseum Cypherpunk (Solana)" }],
+    stack: { languages: ["Rust"], frameworks: ["Axum", "Anchor", "Opacity zkTLS"] },
+    excerpts: [
+      {
+        // Writes the computed score to the credit-score PDA through the program's IDL bindings.
+        repo: "Lumaen-Labs/leverage-scoring",
+        path: "src/solana_client/mod.rs",
+        ref: "0fad04f5f7b8987b04c7a8e77946bf55fa5f1c42",
+        lines: [47, 108],
+        name: "solana_client.rs",
+        pinnedOnPurpose: "the file is on the zktls branch; main is the earlier version without it",
+      },
+    ],
+  },
+  {
+    slug: "shikamaru-protocol",
+    folder: "hackathons",
+    title: "Shikamaru Protocol",
+    tagline:
+      "Eliza AI agents, one per risk level, that split a Starknet portfolio between zkLend lending and Ekubo liquidity pools and send the transactions themselves.",
+    repo: "yogesh0509/Shikamaru-Protocol",
+    period: "January to February 2025",
+    hackathons: [{ event: "Starknet AI Agent Hackathon", result: "Winner" }],
+    stack: { languages: ["TypeScript"], frameworks: ["elizaOS", "starknet.js", "zkLend", "Ekubo"] },
+    excerpts: [
+      {
+        // Splits the amount between protocols within the risk tier's bounds, then between the top pools.
+        repo: "yogesh0509/Shikamaru-Protocol",
+        path: "src/providers/investmentStrategy.ts",
+        ref: "22a42f2eb5d0f6e5a861bb25e9c305db9c438ba0",
+        lines: [232, 344],
+      },
+    ],
+  },
+  {
+    slug: "racoto",
+    folder: "hackathons",
+    title: "RaCoTo",
+    tagline:
+      "Rainforest Proof-of-Conservation Token: rewards forest owners with tokens for CO2 their forest absorbs, estimated from satellite data that Chainlink Functions brings on-chain.",
+    repo: "Rainforest-Conservation-Tokens/RaCoTo",
+    period: "2023",
+    role: "Smart contracts and Chainlink Functions, in a team of five",
+    hackathons: [
+      { event: "Chainlink Spring 2023 Hackathon", url: "https://devpost.com/software/raico-rainforest-proof-of-conservation" },
+      { event: "Constellation: A Chainlink Hackathon (2023)", url: "https://devpost.com/software/racoto-rainforest-conservation-incentivized-tokens" },
+    ],
+    stack: { languages: ["Solidity", "JavaScript"], frameworks: ["Chainlink Functions", "Hardhat", "Polygon Mumbai"] },
+    // No excerpt on purpose: my commits are in the private RaCoTo-Backend repo, and the public copy
+    // of RaCoTo.sol interleaves a teammate's lines with mine.
+    excerpts: [],
+  },
+];
+
+/**
+ * My research papers, in the order they are listed. The page body is content/research/<slug>.md.
+ * When the final version of Djed Shu is published, add its link to `facts` and update `status`.
+ */
+export const research: ResearchEntry[] = [
+  {
+    slug: "djed-shu",
+    title: "Djed Shu: A Stablecoin Protocol with Two Oracle Prices",
+    tagline:
+      "A stablecoin protocol that prices each trade with one of two oracle prices, such as the day's lowest and highest, so that a late or manipulated price does less harm to its reserve.",
+    authors: ["Zahnentferner", "Yogesh Agrawal"],
+    period: "2025 to 2026",
+    status: "Version 1 is public. The final version will follow.",
+    facts: [
+      // Pinned to a commit of the papers repository, so the link cannot change under the page.
+      { label: "Paper", value: "[version 1 (PDF)](https://cdn.jsdelivr.net/gh/StabilityNexus/Papers@8762ee9/papers/Djed/Shu/v1.pdf), listed on [stability.nexus/research](https://stability.nexus/research)" },
+      { label: "Presented at", value: "[First Stability Workshop (STABILITY 2025)](https://workshop.stability.nexus/), 15 December 2025, LNM Institute of Information Technology, India" },
+    ],
+    relatedProject: "/open-source/djed-solidity",
+  },
+];
+
+/**
+ * Videos of my talks and demos. Each becomes a `.mp4` file in its folder that plays in the editor (the player
+ * loads from YouTube or Loom only after you press play), and `watch <folder name>` opens it from the terminal.
+ * Lengths come from the providers: Loom's oEmbed data, and the YouTube watch page.
+ */
+export const videos: VideoSpec[] = [
+  {
+    dir: "/research/djed-shu",
+    url: "https://youtu.be/VKPsaCQO_j4",
+    title: "Djed Shu Stablecoin Protocol",
+    seconds: 2103,
+    by: "Stability Nexus",
+    file: "talk.mp4",
+  },
+  {
+    dir: "/open-source/djed-solidity",
+    url: "https://youtu.be/8oE1aKTmzP4",
+    title: "Djed Shu Demo (Ethereum Classic Hackathon)",
+    seconds: 82,
+    by: "Stability Nexus",
+  },
+  {
+    dir: "/hackathons/haystack",
+    url: "https://www.loom.com/share/5c3719e5ebd44815b146ae9ff35d468d",
+    title: "Haystack, Hiding Wallet Addresses with Decoys",
+    seconds: 301,
+  },
+  {
+    dir: "/hackathons/owl-finance",
+    url: "https://www.loom.com/share/f58a19a31d2e40e98ead3427c6c9e55b",
+    title: "Owl Finance",
+    seconds: 300,
+  },
+  {
+    dir: "/hackathons/shikamaru-protocol",
+    url: "https://www.loom.com/share/3ab3322cc3294a2080f5f219e112d2de",
+    title: "Bridging Finance with Shikamaru Protocol",
+    seconds: 155,
+  },
+  {
+    dir: "/archive/bakexp",
+    url: "https://www.loom.com/share/0331606d906541219dfa1ade5e8d591a",
+    title: "Introducing Bake XP: A Gamified Social App for Baking Enthusiasts",
+    seconds: 279,
+  },
 ];
 
 /** Repos that never appear in the generated /archive folder. Compared case-insensitively. */
 export const excludedRepos: string[] = [
   "yogesh0509", // profile README
-  "portfolio", // this site
   "tech-lightlink-engineering-yogesh", // a hiring take-home exercise
   "durgapur-infra", // a client's website, unrelated to the rest
   "BlockDawgs", // template README only
@@ -517,4 +806,6 @@ export const excludedRepos: string[] = [
   "song-recommendation-kmeans", // no README
   "E-commerce-edu", // coursework
   "medical-consultancy", // coursework
+  "local-chainlink-node", // a sample setup script, not a project
+  "GSOC2023-Proposal", // a proposal document, not code; the 2024 GSoC work is under experience
 ];

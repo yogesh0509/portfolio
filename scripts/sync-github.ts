@@ -35,6 +35,7 @@ import {
   ApiRepoSchema,
   ApiSearchSchema,
   ApiUserSchema,
+  redactUrlPasswords,
   scanForSecrets,
   serializeSnapshot,
   sliceLines,
@@ -193,7 +194,7 @@ async function main() {
     const languages = z.record(z.string(), z.number()).parse(await client.json(`/repos/${api.full_name}/languages`));
     const shown = !api.archived && !featured.has(api.full_name.toLowerCase()) && !excluded.has(api.name.toLowerCase());
     const readme = shown ? await fetchReadme(client, api.full_name, api.default_branch) : null;
-    if (readme !== null) files.set(`data/readmes/${api.name}.md`, readme);
+    if (readme !== null) files.set(`data/readmes/${api.name}.md`, redactUrlPasswords(readme));
     repos.push(toRepo(api, languages, readme !== null));
   }
 

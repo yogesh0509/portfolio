@@ -147,10 +147,26 @@ function manYogesh(data: TerminalData): Line[] {
     out.push(blank());
   }
 
+  if (data.research.length > 0) {
+    out.push(section("RESEARCH"));
+    for (const r of data.research) out.push(...body(`${r.title} (${r.authors.join(", ")}): ${r.tagline} ${r.status}`));
+    out.push(blank());
+  }
+
   const own = data.projects.filter((p) => p.folder === "projects");
   if (own.length > 0) {
     out.push(section("PROJECTS"));
     for (const p of own) out.push(...body(`${p.title} (${p.period}): ${p.tagline}`));
+    out.push(blank());
+  }
+
+  const hackathons = data.projects.filter((p) => p.folder === "hackathons");
+  if (hackathons.length > 0) {
+    out.push(section("HACKATHONS"));
+    for (const p of hackathons) {
+      const events = p.hackathons.map((h) => (h.result ? `${h.event}, ${h.result}` : h.event)).join("; ");
+      out.push(...body(`${p.title} (${events}): ${p.tagline}`));
+    }
     out.push(blank());
   }
 
@@ -159,7 +175,9 @@ function manYogesh(data: TerminalData): Line[] {
   out.push(blank());
 
   out.push(section("FILES"));
-  out.push([{ text: "       " }, cmd("~/open-source", "ls open-source"), { text: "  " }, cmd("~/projects", "ls projects"), { text: "  " }, cmd("~/experience", "ls experience"), { text: "  " }, cmd("~/archive", "ls archive")], blank());
+  // Two rows, so the folders fit the page's 72 columns.
+  const folders = (names: string[]): Line => [{ text: "       " }, ...names.flatMap((name, i) => [...(i > 0 ? [{ text: "  " }] : []), cmd(`~/${name}`, `ls ${name}`)])];
+  out.push(folders(["open-source", "research", "projects"]), folders(["hackathons", "experience", "archive"]), blank());
 
   out.push(section("SEE ALSO"));
   out.push([{ text: "       " }, cmd("git-log(1)", "git log --oneline"), { text: ", " }, cmd("gh(1)", "gh pr list --merged"), { text: ", " }, cmd("contact(1)", "contact"), { text: ", " }, cmd("neofetch(1)", "neofetch")], blank());

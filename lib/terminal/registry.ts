@@ -6,6 +6,7 @@ import { infoCommands, manCommand } from "./commands/info";
 import { legacyCommands } from "./commands/legacy";
 import { linuxCommands, whichCommand } from "./commands/linux";
 import { portsCommand, runCommand } from "./commands/run";
+import { watchCommand } from "./commands/watch";
 import { blank, bold, cmd, plain } from "./text";
 import type { Command } from "./types";
 
@@ -32,6 +33,7 @@ const EXAMPLES: Record<string, string> = {
   apt: "apt list --installed",
   "bitcoin-cli": "bitcoin-cli getblockcount",
   cast: "cast block-number",
+  watch: "watch",
   starkli: "starkli block-number",
   uname: "uname -a",
   date: "date",
@@ -75,7 +77,7 @@ const helpCommand: Command = {
   },
 };
 
-const base: Command[] = [...fileCommands, ...infoCommands, runCommand, portsCommand, gitCommand, ghCommand, ...chainCommands, ...linuxCommands, ...legacyCommands];
+const base: Command[] = [...fileCommands, ...infoCommands, runCommand, portsCommand, watchCommand, gitCommand, ghCommand, ...chainCommands, ...linuxCommands, ...legacyCommands];
 
 /** Every command, in the order `help` lists them. */
 export const commands: Command[] = [...base, manCommand(() => commands), whichCommand(() => commands), helpCommand];

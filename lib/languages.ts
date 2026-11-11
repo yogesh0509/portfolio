@@ -10,6 +10,7 @@ export type LangId =
   | "toml"
   | "shellscript"
   | "python"
+  | "video"
   | "text";
 
 const BY_EXTENSION: Record<string, LangId> = {
@@ -26,6 +27,7 @@ const BY_EXTENSION: Record<string, LangId> = {
   toml: "toml",
   sh: "shellscript",
   py: "python",
+  mp4: "video",
 };
 
 /** Label shown in the status bar, as VS Code shows the language mode. */
@@ -40,6 +42,7 @@ export const LANG_LABEL: Record<LangId, string> = {
   toml: "TOML",
   shellscript: "Shell Script",
   python: "Python",
+  video: "Video",
   text: "Plain Text",
 };
 

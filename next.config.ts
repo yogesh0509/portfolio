@@ -1,13 +1,16 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { NextConfig } from "next";
+import { videos } from "./content/config";
 import { NETWORKS } from "./lib/chain/networks";
+import { EMBED_ORIGIN, parseVideoUrl } from "./lib/video";
 
 /**
  * The browser may only contact the origins listed in connect-src of the Content-Security-Policy in
- * vercel.json. A network added to lib/chain/networks.ts without its origin there would be blocked in
- * production but work in `next dev`, so the build refuses to start until the two agree. Like the
- * relative import above, it resolves against the working directory, so run Next from the repo root.
+ * vercel.json, and may only frame the ones in frame-src. A network added to lib/chain/networks.ts, or a
+ * video from a new provider, without its origin there would be blocked in production but work in
+ * `next dev`, so the build refuses to start until they agree. Like the relative imports above, it
+ * resolves against the working directory, so run Next from the repo root.
  */
 function assertCspAllowsNetworks(): void {
   const vercel = JSON.parse(readFileSync(join(process.cwd(), "vercel.json"), "utf8")) as {
@@ -22,6 +25,12 @@ function assertCspAllowsNetworks(): void {
     .filter((origin) => !connectSrc.has(origin));
   if (missing.length > 0) {
     throw new Error(`vercel.json: connect-src in the Content-Security-Policy is missing ${[...new Set(missing)].join(", ")} (from lib/chain/networks.ts)`);
+  }
+
+  const frameSrc = new Set(/(?:^|;)\s*frame-src\s+([^;]*)/.exec(csp)?.[1].trim().split(/\s+/) ?? []);
+  const unframed = [...new Set(videos.map((video) => EMBED_ORIGIN[parseVideoUrl(video.url).provider]))].filter((origin) => !frameSrc.has(origin));
+  if (unframed.length > 0) {
+    throw new Error(`vercel.json: frame-src in the Content-Security-Policy is missing ${unframed.join(", ")} (from the videos in content/config.ts)`);
   }
 }
 

@@ -1,4 +1,5 @@
 import { blank, bold, cmd, dim, plain } from "./text";
+import { isSiteRepo } from "../site";
 import { plural } from "./commands/shared";
 import type { Env, Line } from "./types";
 
@@ -17,7 +18,7 @@ export function motd(env: Env): Line[] {
   const { data } = env;
   const { system } = data;
   const cutoff = env.now().getTime() - 30 * 24 * 60 * 60 * 1000;
-  const recent = data.repos.filter((r) => r.listed && Date.parse(r.pushedAt) >= cutoff).length;
+  const recent = data.repos.filter((r) => r.listed && !isSiteRepo(r.fullName) && Date.parse(r.pushedAt) >= cutoff).length;
 
   const out: Line[] = [
     [bold(`Welcome to ${system.os} (GNU/Linux ${system.kernel} ${system.arch})`)],

@@ -1,6 +1,7 @@
 import { renderMarkdown } from "@/lib/markdown/render.server";
 import type { VfsFile } from "@/lib/vfs/types";
 import CodeView from "./CodeView";
+import VideoView from "./VideoView";
 import ViewToggle from "./ViewToggle";
 
 export default async function MarkdownView({ file }: { file: VfsFile }) {
@@ -10,6 +11,12 @@ export default async function MarkdownView({ file }: { file: VfsFile }) {
     <article className="md">
       {needsHeading && <h1 className="sr-only">{file.name}</h1>}
       {await renderMarkdown(file.content, file.source)}
+      {file.video && (
+        <section aria-labelledby="page-video">
+          <h2 id="page-video">Video</h2>
+          <VideoView key={file.path} video={file.video} />
+        </section>
+      )}
     </article>
   );
   const source = <CodeView code={file.content} lang="markdown" />;

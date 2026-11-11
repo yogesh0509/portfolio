@@ -22,6 +22,12 @@ The excerpt in this folder is the version after my 2026 fix to my own earlier co
 
 `DjedShu.sol` is a modified copy of `Djed.sol`, written by the protocol's authors. I adapted it to use the two prices.
 
+## The demo video
+
+The video in this folder, "Djed Shu Demo (Ethereum Classic Hackathon)", was posted by Stability Nexus on 10 March 2025 and is 82 seconds long. Its description says that Ethereum Classic, a public blockchain, had only a single-price oracle, so an oracle adapter was built that remembers prices over a range of time to produce the two prices Djed Shu needs. It also says the adapter and a Djed Shu contract were deployed to Mordor, Ethereum Classic's test network, where no real money is at stake.
+
+By that behaviour, what the description calls an oracle adapter matches the converter above. My pull request for the converter was opened in May 2024 and merged on 10 March 2025, so the demo predates my 2026 fix. The description does not say who speaks in the video.
+
 ## Tests
 
 `forge test` at the pinned commit runs 39 tests, all passing, including the three for the converter.

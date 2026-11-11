@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { FaRegFileAlt } from "react-icons/fa";
+import { FaRegFileAlt, FaRegFileVideo } from "react-icons/fa";
 import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { SiJavascript, SiJson, SiMarkdown, SiPython, SiRust, SiSolidity, SiTypescript } from "react-icons/si";
 import type { LangId } from "@/lib/languages";
@@ -17,6 +17,7 @@ const ICONS: Partial<Record<LangId, { Icon: React.ComponentType<{ color?: string
   javascript: { Icon: SiJavascript, color: "#f1e05a" },
   json: { Icon: SiJson, color: "#cbcb41" },
   python: { Icon: SiPython, color: "#3572a5" },
+  video: { Icon: FaRegFileVideo, color: "#c586c0" },
 };
 
 export function FileIcon({ lang }: { lang?: LangId }) {

@@ -7,7 +7,7 @@ Follow these steps to set up the project and perform database migrations using S
 Run the following command to apply migrations to your PostgreSQL database:
 
 ```shell
-sea-orm-cli migrate -u postgresql://postgres:admin@localhost:5432/chiji-db?schema=public
+sea-orm-cli migrate -u postgresql://postgres:<password>@localhost:5432/chiji-db?schema=public
 ```
 
 ### 2. Generate Entity Models
@@ -15,7 +15,7 @@ sea-orm-cli migrate -u postgresql://postgres:admin@localhost:5432/chiji-db?schem
 Generate the SeaORM entity models based on the database schema:
 
 ```shell
-sea-orm-cli generate entity -u postgresql://postgres:admin@localhost:5432/chiji-db?schema=public -o entity/src
+sea-orm-cli generate entity -u postgresql://postgres:<password>@localhost:5432/chiji-db?schema=public -o entity/src
 ```
 
 ### 3. Running the Server
@@ -29,7 +29,7 @@ cargo run
 ### 4. Example .env file:
 
 ```shell
-DATABASE_URL=postgresql://postgres:admin@localhost:5432/chiji-db?schema=public```
+DATABASE_URL=postgresql://postgres:<password>@localhost:5432/chiji-db?schema=public```
 
 
 // Governance.sol -> space events

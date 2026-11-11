@@ -1,4 +1,5 @@
 import type { LangId } from "../languages";
+import type { VideoInfo } from "../video";
 
 export interface FileLinks {
   /** Repository or file page on GitHub. */
@@ -29,6 +30,11 @@ export interface VfsFile {
   size: number;
   links: FileLinks;
   source?: MarkdownSource;
+  /**
+   * On a `.mp4` file, the video it plays. On a folder's README, the same video, shown under the page. The
+   * file's `content` is a plain-text description, which is what `cat` prints.
+   */
+  video?: VideoInfo;
 }
 
 export interface VfsDir {

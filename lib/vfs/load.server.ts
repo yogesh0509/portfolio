@@ -26,6 +26,20 @@ export function loadSnapshot(): Snapshot {
   return SnapshotSchema.parse(JSON.parse(raw));
 }
 
+/**
+ * The résumé PDF's experience plus the config entries marked `keepWithPdf` that it does not list,
+ * each placed so the list stays newest first (by the end of its latest role; a current role counts as newest).
+ */
+export function withKeptEntries(pdf: config.ExperienceEntry[], kept: config.ExperienceEntry[]): config.ExperienceEntry[] {
+  const latestEnd = (entry: config.ExperienceEntry) => entry.roles.map((role) => role.to ?? "9999-12").sort().at(-1) ?? "";
+  const merged = [...pdf];
+  for (const entry of kept.filter((e) => e.keepWithPdf && !pdf.some((p) => p.id === e.id))) {
+    const at = merged.findIndex((other) => latestEnd(other) < latestEnd(entry));
+    merged.splice(at === -1 ? merged.length : at, 0, entry);
+  }
+  return merged;
+}
+
 export interface ResumeData {
   experience: config.ExperienceEntry[];
   education: config.EducationEntry[];
@@ -43,7 +57,8 @@ let cachedResume: ResumeData | undefined;
 /**
  * The résumé as the site shows it. The PDF's data (data/resume.json, written by the sync) is used only
  * when its experience, education and skills all parsed; otherwise all three come from
- * content/config.ts, so the site never mixes a half-finished résumé with the fallback.
+ * content/config.ts, so the site never mixes a half-finished résumé with the fallback. The one exception is
+ * an experience entry marked `keepWithPdf` (see withKeptEntries).
  */
 export function getResume(): ResumeData {
   if (cachedResume) return cachedResume;
@@ -53,7 +68,7 @@ export function getResume(): ResumeData {
   const pdf = parsed?.success ? parsed.data : null;
   const fallback = { experience: config.experience, education: config.education, skills: config.skills, sections: [], fromPdf: false };
   if (pdf?.experience && pdf.education && pdf.skills) {
-    cachedResume = { experience: pdf.experience, education: pdf.education, skills: pdf.skills, sections: pdf.sections, fromPdf: true, pdfUrl: pdf.pdfUrl };
+    cachedResume = { experience: withKeptEntries(pdf.experience, config.experience), education: pdf.education, skills: pdf.skills, sections: pdf.sections, fromPdf: true, pdfUrl: pdf.pdfUrl };
   } else {
     cachedResume = { ...fallback, pdfUrl: pdf?.pdfUrl ?? null };
   }
@@ -99,6 +114,8 @@ export function getTerminalData(): TerminalData {
     education: getResume().education,
     skills: getResume().skills,
     projects: config.projects,
+    research: config.research,
+    videos: config.videos,
     excludedRepos: config.excludedRepos,
     contracts: buildContracts(config.projects),
     snapshot: loadSnapshot(),
