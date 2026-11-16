@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "syncedAt": "2026-11-10T23:28:40.022Z",
+  "syncedAt": "2026-11-16T11:32:26.257Z",
   "profile": {
     "login": "yogesh0509",
     "name": "Yogesh Agrawal",
@@ -12,6 +12,31 @@
     "createdAt": "2021-12-19T18:46:03Z"
   },
   "repos": [
+    {
+      "name": "portfolio",
+      "fullName": "yogesh0509/portfolio",
+      "description": "Portfolio website using NEXT.js and tailwind CSS",
+      "language": "TypeScript",
+      "languages": {
+        "CSS": 5980,
+        "JavaScript": 2674,
+        "Python": 4384,
+        "Rust": 9878,
+        "Solidity": 7655,
+        "TypeScript": 352296
+      },
+      "stars": 0,
+      "forks": 0,
+      "topics": [],
+      "homepage": "https://www.yogesh0509.info",
+      "createdAt": "2024-02-01T07:05:35Z",
+      "pushedAt": "2026-11-11T19:03:46Z",
+      "fork": false,
+      "archived": false,
+      "htmlUrl": "https://github.com/yogesh0509/portfolio",
+      "defaultBranch": "main",
+      "hasReadme": false
+    },
     {
       "name": "Haystack",
       "fullName": "yogesh0509/Haystack",
@@ -54,31 +79,6 @@
       "hasReadme": false
     },
     {
-      "name": "portfolio",
-      "fullName": "yogesh0509/portfolio",
-      "description": "Portfolio website using NEXT.js and tailwind CSS",
-      "language": "TypeScript",
-      "languages": {
-        "CSS": 6007,
-        "JavaScript": 2714,
-        "Python": 2328,
-        "Rust": 7622,
-        "Solidity": 7655,
-        "TypeScript": 308883
-      },
-      "stars": 0,
-      "forks": 0,
-      "topics": [],
-      "homepage": "https://www.yogesh0509.info",
-      "createdAt": "2024-02-01T07:05:35Z",
-      "pushedAt": "2026-11-09T11:40:35Z",
-      "fork": false,
-      "archived": false,
-      "htmlUrl": "https://github.com/yogesh0509/portfolio",
-      "defaultBranch": "main",
-      "hasReadme": false
-    },
-    {
       "name": "jarvis",
       "fullName": "yogesh0509/jarvis",
       "description": "Custom voice-control assistant for Windows.",
@@ -98,7 +98,7 @@
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/jarvis",
       "defaultBranch": "main",
-      "hasReadme": true
+      "hasReadme": false
     },
     {
       "name": "tech-lightlink-engineering-yogesh",
@@ -258,7 +258,7 @@
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/Shikamaru-Protocol",
       "defaultBranch": "main",
-      "hasReadme": true
+      "hasReadme": false
     },
     {
       "name": "BlockDawgs",
@@ -397,7 +397,7 @@
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/TakeYourQuiz",
       "defaultBranch": "main",
-      "hasReadme": true
+      "hasReadme": false
     },
     {
       "name": "medical-consultancy",
@@ -457,7 +457,7 @@
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/GSOC2023-Proposal",
       "defaultBranch": "main",
-      "hasReadme": true
+      "hasReadme": false
     },
     {
       "name": "local-chainlink-node",
@@ -477,7 +477,7 @@
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/local-chainlink-node",
       "defaultBranch": "main",
-      "hasReadme": true
+      "hasReadme": false
     },
     {
       "name": "SocioDAO",
@@ -661,10 +661,16 @@
   ],
   "demos": [
     {
+      "repo": "yogesh0509/TakeYourQuiz",
+      "url": "https://takeyourquiz.onrender.com",
+      "status": 200,
+      "checkedAt": "2026-11-16T11:32:19.393Z"
+    },
+    {
       "repo": "yogesh0509/web3-DREAM11",
       "url": "https://web3-dream-11.vercel.app",
       "status": 200,
-      "checkedAt": "2026-11-10T23:28:28.114Z"
+      "checkedAt": "2026-11-16T11:31:46.112Z"
     }
   ]
 }
