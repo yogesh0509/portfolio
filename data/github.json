@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "syncedAt": "2026-11-16T11:32:26.257Z",
+  "syncedAt": "2026-11-23T12:56:56.947Z",
   "profile": {
     "login": "yogesh0509",
     "name": "Yogesh Agrawal",
@@ -15,7 +15,7 @@
     {
       "name": "portfolio",
       "fullName": "yogesh0509/portfolio",
-      "description": "Portfolio website using NEXT.js and tailwind CSS",
+      "description": "Portfolio website built to look like VS Code connected to a WSL Ubuntu machine",
       "language": "TypeScript",
       "languages": {
         "CSS": 5980,
@@ -30,7 +30,7 @@
       "topics": [],
       "homepage": "https://www.yogesh0509.info",
       "createdAt": "2024-02-01T07:05:35Z",
-      "pushedAt": "2026-11-11T19:03:46Z",
+      "pushedAt": "2026-11-20T13:16:22Z",
       "fork": false,
       "archived": false,
       "htmlUrl": "https://github.com/yogesh0509/portfolio",
@@ -223,7 +223,7 @@
         "Solidity": 873634,
         "TypeScript": 97510
       },
-      "stars": 17,
+      "stars": 18,
       "forks": 6,
       "topics": [
         "blockchain",
@@ -664,13 +664,13 @@
       "repo": "yogesh0509/TakeYourQuiz",
       "url": "https://takeyourquiz.onrender.com",
       "status": 200,
-      "checkedAt": "2026-11-16T11:32:19.393Z"
+      "checkedAt": "2026-11-23T12:56:50.566Z"
     },
     {
       "repo": "yogesh0509/web3-DREAM11",
       "url": "https://web3-dream-11.vercel.app",
       "status": 200,
-      "checkedAt": "2026-11-16T11:31:46.112Z"
+      "checkedAt": "2026-11-23T12:56:17.199Z"
     }
   ]
 }
